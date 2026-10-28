@@ -97,10 +97,13 @@ section.block{padding:clamp(4.5rem, 10vw, 8rem) 0}
 
 /* reading pane */
 .owa-read{display:flex; flex-direction:column; min-width:0; background:#fff}
-.read-tools{display:flex; gap:.3rem; padding:.5rem .9rem; border-bottom:1px solid var(--owa-line); flex-wrap:wrap}
-.rtool{display:inline-flex; align-items:center; gap:.35rem; background:none; border:0; color:var(--owa-ink); border-radius:5px; padding:.4rem .6rem; font-size:.85rem; font-weight:600}
-.rtool:hover{background:#f3f2f1}
-.rtool.report{color:var(--owa)}
+.read-tools{display:flex; align-items:center; gap:.15rem; padding:.45rem .9rem; border-bottom:1px solid var(--owa-line); flex-wrap:wrap}
+.read-tools .rtool{display:inline-flex; align-items:center; gap:.4rem; background:none; border:0; width:auto; min-width:0; max-width:none; height:auto; margin:0; grid-template-columns:none; color:var(--owa-ink); border-radius:4px; padding:.42rem .7rem; font-size:.86rem; font-weight:600; line-height:1.2; white-space:nowrap}
+.read-tools .rtool svg{width:16px; height:16px; flex:none}
+.read-tools .rtool:hover{background:#f3f2f1}
+.read-tools .rt-sep{width:1px; align-self:stretch; background:var(--owa-line); margin:.2rem .35rem}
+.read-tools .rtool.t-report{color:var(--owa)}
+.read-tools .rtool.t-report:hover{background:#e1ecf7}
 .reader{padding:1.1rem clamp(1.1rem,2.5vw,2rem) 1.6rem; overflow:auto; flex:1}
 .reader h3{font-weight:700; font-size:1.4rem; line-height:1.25; margin:0 0 1rem; color:var(--owa-ink); font-family:var(--body); letter-spacing:0}
 .meta{display:flex; gap:.75rem; align-items:center; margin:0 0 1.4rem; font-size:.95rem; color:var(--owa-soft)}
@@ -141,6 +144,37 @@ section.block{padding:clamp(4.5rem, 10vw, 8rem) 0}
 
 .hook-note{display:flex; flex-wrap:wrap; gap:.4rem 1.2rem; align-items:center; justify-content:space-between; margin-top:1rem; font-size:.95rem; color:#46536B}
 .linklike{background:none; border:0; padding:0; color:var(--trust); text-decoration:underline; text-underline-offset:3px; font:inherit}
+
+/* scroll lock during the simulation */
+body.sim-lock{overflow:hidden; height:100vh; height:100dvh}
+.utility .pill.skip{display:none}
+body.sim-lock .utility .pill.skip{display:inline-flex}
+
+/* fake guiding cursor */
+.fakecursor{position:absolute; left:0; top:0; width:26px; height:26px; z-index:7; pointer-events:none; opacity:0; transform:translate(-50%,-50%) scale(1); transition:opacity .4s; filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))}
+.fakecursor.show{opacity:1}
+.fakecursor.tap{animation:tapPulse .4s ease-out}
+@keyframes tapPulse{40%{transform:translate(-50%,-50%) scale(.72)}100%{transform:translate(-50%,-50%) scale(1)}}
+.cursor-ring{position:absolute; left:0; top:0; width:44px; height:44px; border-radius:50%; border:2px solid var(--owa); transform:translate(-50%,-50%) scale(.3); opacity:0; z-index:7; pointer-events:none}
+.cursor-ring.go{animation:ring .5s ease-out}
+@keyframes ring{0%{opacity:.8; transform:translate(-50%,-50%) scale(.3)}100%{opacity:0; transform:translate(-50%,-50%) scale(1.3)}}
+.nudge{animation:nudge 1s ease-in-out 2}
+@keyframes nudge{25%{box-shadow:inset 0 0 0 2px var(--owa)}75%{box-shadow:inset 0 0 0 2px var(--owa)}}
+
+/* field capture effect in fake login */
+.fake-field.capturing{color:#1b1b1b; border-color:var(--danger)}
+.fake-field .caret{display:inline-block; width:2px; height:1.05em; background:#1b1b1b; margin-left:1px; vertical-align:-2px; animation:caret .8s steps(1) infinite}
+@keyframes caret{50%{opacity:0}}
+.capture-tag{position:absolute; background:var(--danger); color:#fff; font-family:var(--mono); font-size:.72rem; font-weight:600; padding:.15rem .5rem; border-radius:4px; transform:translateY(-130%); white-space:nowrap; box-shadow:0 4px 10px rgba(0,0,0,.25); z-index:9}
+.fake-field{position:relative}
+
+/* confetti canvas */
+#confetti{position:fixed; inset:0; width:100%; height:100%; pointer-events:none; z-index:60; display:none}
+#confetti.on{display:block}
+.caught-word{color:var(--safe)!important}
+/* while locked, hide everything below the hook so a stray scroll can't spoil the reveal */
+body.sim-lock #hook{height:100dvh; overflow-y:auto; -webkit-overflow-scrolling:touch}
+body.sim-lock main,body.sim-lock #stakes,body.sim-lock #reveal:not(.on),body.sim-lock #sources,body.sim-lock footer{visibility:hidden}
 
 /* glitch moment */
 .glitch{animation:glitch .9s steps(2,end) both}
@@ -385,11 +419,13 @@ footer{background:var(--deep); color:var(--bone-soft); padding:2rem 0; font-size
   .local{grid-template-columns:1fr}
 }
 @media (max-width: 720px){
-  .owa-grid{grid-template-columns:1fr; grid-auto-rows:auto}
+  #hook{padding:.5rem 0 1rem}
+  .client{height:calc(100dvh - 1rem); min-height:0}
+  .owa-grid{grid-template-columns:1fr; grid-template-rows:auto 1fr; min-height:0}
   .owa-rail{display:none}
-  .owa-list{max-height:40vh}
-  .owa-read{min-height:46vh}
-  .client{min-height:auto}
+  .owa-list{max-height:34vh; min-height:0}
+  .owa-read{min-height:0}
+  .reader{min-height:0}
 }
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important; scroll-behavior:auto!important}
@@ -401,8 +437,10 @@ footer{background:var(--deep); color:var(--bone-soft); padding:2rem 0; font-size
 <a class="sr-only" href="#stakes">Skip the simulation</a>
 
 <div class="utility">
+  <button class="pill skip" id="skipTop">Skip simulation</button>
   <button class="pill" id="soundBtn" aria-pressed="false">Sound off</button>
 </div>
+<canvas id="confetti" aria-hidden="true"></canvas>
 
 <!-- ================= 1. THE HOOK ================= -->
 <header id="hook" aria-label="Phishing simulation">
@@ -465,9 +503,10 @@ footer{background:var(--deep); color:var(--bone-soft); padding:2rem 0; font-size
         <!-- reading pane -->
         <section class="owa-read" aria-label="Reading pane">
           <div class="read-tools" id="readTools" hidden>
-            <button class="rtool"><svg width="15" height="15" viewBox="0 0 24 24"><path fill="currentColor" d="M10 9V5l-7 7 7 7v-4c5 0 8 2 10 5-1-6-5-11-10-11"/></svg>Reply</button>
-            <button class="rtool"><svg width="15" height="15" viewBox="0 0 24 24"><path fill="currentColor" d="M14 9V5l7 7-7 7v-4C9 12 6 14 4 17c1-6 5-8 10-8"/></svg>Forward</button>
-            <button class="rtool report" id="reportBtn"><svg width="15" height="15" viewBox="0 0 24 24"><path fill="currentColor" d="M1 21 12 2l11 19zm11-3h2v2h-2zm0-6h2v4h-2z"/></svg>Report</button>
+            <button class="rtool"><svg width="16" height="16" viewBox="0 0 24 24"><path fill="currentColor" d="M10 9V5l-7 7 7 7v-4c5 0 8 2 10 5-1-6-5-11-10-11"/></svg>Reply</button>
+            <button class="rtool"><svg width="16" height="16" viewBox="0 0 24 24"><path fill="currentColor" d="M14 9V5l7 7-7 7v-4C9 12 6 14 4 17c1-6 5-8 10-8"/></svg>Forward</button>
+            <span class="rt-sep" aria-hidden="true"></span>
+            <button class="rtool t-report" id="reportBtn"><svg width="16" height="16" viewBox="0 0 24 24"><path fill="currentColor" d="M1 21 12 2l11 19zm11-3h2v2h-2zm0-6h2v4h-2z"/></svg>Report</button>
           </div>
           <div class="reader" id="reader">
             <div class="empty-read" id="emptyRead">
@@ -484,6 +523,10 @@ footer{background:var(--deep); color:var(--bone-soft); padding:2rem 0; font-size
         <span class="avatar" aria-hidden="true">FA</span>
         <span><b>CPU Financial Aid Office</b><br>Action required: Fall disbursement on hold<br><small>now · Inbox</small></span>
       </button>
+
+      <!-- fake guiding cursor -->
+      <span class="cursor-ring" id="cursorRing" aria-hidden="true"></span>
+      <svg class="fakecursor" id="fakeCursor" viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" stroke="#1b1b1b" stroke-width="1.3" d="M5 3l14 7-6 2-2.5 6z"/></svg>
 
       <!-- login overlay: a simulated new browser tab -->
       <div class="login-overlay" id="loginOverlay" aria-hidden="true">
@@ -522,8 +565,8 @@ footer{background:var(--deep); color:var(--bone-soft); padding:2rem 0; font-size
     <p class="hooked-word" id="hookedTitle">Hooked.</p>
     <div class="reveal-grid">
       <div>
-        <p class="stakes-lede">That’s all it takes. You were one keystroke away from handing a stranger your student account.</p>
-        <p class="soft prose">Relax. Those boxes were never real fields, and nothing you did was recorded. But the email you just trusted had six warning signs in it. Here they are.</p>
+        <p class="stakes-lede" id="revealLede">That’s all it takes. You were one keystroke away from handing a stranger your student account.</p>
+        <p class="soft prose" id="revealSub">Relax. Those boxes were never real fields, and nothing you did was recorded. But the email you just trusted had six warning signs in it. Here they are.</p>
         <div class="annotated show-flags">
           <h3 style="font-family:var(--body);letter-spacing:0;font-size:1.2rem">Action required: Fall disbursement on hold</h3>
           <div class="meta"><span class="avatar">FA</span><span><b>CPU Financial Aid Office</b><br><span class="addr"><mark class="flag">finaid@cardinalplains<b>-edu.com</b><sup>1</sup></mark></span></span></div>
@@ -898,7 +941,11 @@ var toast=$("#toast"), status1=$("#status1"), client=$("#client"),
     reader=$("#reader"), readTools=$("#readTools"), emptyRead=$("#emptyRead"),
     loginOverlay=$("#loginOverlay");
 
-setTimeout(function(){ toast.classList.add("show"); ping(880,.12); },1500);
+/* lock the page so scrolling can't spoil the reveal until they finish or skip */
+document.body.classList.add("sim-lock");
+function unlock(){ document.body.classList.remove("sim-lock"); }
+
+setTimeout(function(){ if(!opened){ toast.classList.add("show"); ping(880,.12); } },1500);
 
 var EMAILS={
   canvas:{tools:false, html:'<h3>ENGL 250: Unit 3 feedback posted</h3>'+
@@ -916,14 +963,17 @@ var EMAILS={
     '<p>Thank you,<br>Office of Student Financial Aid<br>Cardinal Plains University</p>'}
 };
 
+var opened=false, cursorTimer=setTimeout(guideCursor, 5500);
+function markOpened(){ opened=true; clearTimeout(cursorTimer); hideCursor(); var pr=$("#phishRow"); if(pr) pr.classList.remove("nudge"); }
+
 function openMessage(key){
   var m=EMAILS[key]; if(!m) return;
+  markOpened();
   toast.classList.remove("show");
   if(emptyRead) emptyRead.style.display="none";
   readTools.hidden=!m.tools;
   reader.innerHTML=m.html;
   reader.scrollTop=0;
-  // mark selected in list
   $$("#inboxList .row").forEach(function(r){ r.classList.toggle("sel", r.dataset.open===key); });
   var pr=$("#phishRow"); if(key==="phish"&&pr) pr.classList.remove("unread");
   if(key==="phish"){ wireVerify(); typeStatus(); }
@@ -934,6 +984,36 @@ $$("#inboxList .row").forEach(function(r){
   r.addEventListener("click",function(){ openMessage(r.dataset.open); });
 });
 toast.addEventListener("click",function(){ openMessage("phish"); });
+
+/* guiding cursor: if they don't open the message, point them to it */
+function hideCursor(){ var fc=$("#fakeCursor"); if(fc) fc.classList.remove("show"); }
+function guideCursor(){
+  if(opened) return;
+  var fc=$("#fakeCursor"), ring=$("#cursorRing"), row=$("#phishRow");
+  if(!fc||!row){ return; }
+  toast.classList.add("show");
+  var hb=client.getBoundingClientRect(), rb=row.getBoundingClientRect();
+  var endX=rb.left-hb.left+Math.min(rb.width*0.5,170), endY=rb.top-hb.top+rb.height*0.5;
+  var startX=hb.width*0.62, startY=hb.height*0.82;
+  fc.style.left=startX+"px"; fc.style.top=startY+"px";
+  fc.classList.add("show");
+  if(reduce){
+    fc.style.left=endX+"px"; fc.style.top=endY+"px"; row.classList.add("nudge");
+    setTimeout(function(){ if(!opened) openMessage("phish"); },1400);
+    return;
+  }
+  requestAnimationFrame(function(){
+    fc.style.transition="left 1.2s cubic-bezier(.4,.1,.2,1), top 1.2s cubic-bezier(.4,.1,.2,1), opacity .4s";
+    fc.style.left=endX+"px"; fc.style.top=endY+"px";
+  });
+  setTimeout(function(){
+    if(opened) return;
+    fc.classList.add("tap");
+    if(ring){ ring.style.left=endX+"px"; ring.style.top=endY+"px"; ring.classList.remove("go"); void ring.offsetWidth; ring.classList.add("go"); }
+    row.classList.add("nudge"); ping(700,.08);
+    setTimeout(function(){ if(!opened) openMessage("phish"); }, 650);
+  }, 1350);
+}
 
 var statusMsgs=["Loading remote content from cardinalplains-edu.com…","Connecting to 185.220.xxx.xxx…","This sender is not in your Contacts."];
 function typeStatus(){
@@ -958,36 +1038,97 @@ function wireVerify(){
   });
 }
 
-// optional: Report button in the reading pane also "defuses" (teaches the right move)
+/* Report on the phish = the correct move = a WIN ending */
 $("#reportBtn").addEventListener("click",function(){
-  status1.textContent="Reported to IT Security. This is exactly the right move.";
-  ping(720,.14);
+  if(sprung) return; sprung=true;
+  ping(760,.18);
+  gotoReveal("caught");
 });
 
-// any trap element triggers the glitch + reveal
+/* clicking a fake field: show the data being captured, then spring */
+function captureField(el, done){
+  var isPass = el.getAttribute("aria-describedby")==="lbl2";
+  var full = isPass ? "••••••••••••" : "jordan.lee@cardinalplains.edu";
+  el.classList.add("capturing");
+  var i=0;
+  (function type(){
+    el.textContent = full.slice(0,i) + (i<full.length?"▏":"");
+    if(i<full.length){ i++; setTimeout(type, reduce?0:38); }
+    else {
+      var tag=document.createElement("span"); tag.className="capture-tag"; tag.textContent="⚠ sent to attacker";
+      el.appendChild(tag); ping(300,.12);
+      setTimeout(done, reduce?0:750);
+    }
+  })();
+}
+
 var sprung=false;
 function spring(){
   if(sprung) return; sprung=true;
   ping(140,.4);
-  if(reduce){ gotoReveal(); return; }
+  if(reduce){ gotoReveal("hooked"); return; }
   client.classList.add("glitch");
-  setTimeout(gotoReveal,850);
+  setTimeout(function(){ gotoReveal("hooked"); },850);
 }
-function gotoReveal(){
+var trapBusy=false;
+function trapHit(el){
+  if(sprung||trapBusy) return;
+  if(el.classList.contains("fake-field")){ trapBusy=true; captureField(el, spring); }
+  else spring();
+}
+$$("[data-trap]").forEach(function(el){
+  el.addEventListener("click",function(){ trapHit(el); });
+  el.addEventListener("keydown",function(e){ if(e.key==="Enter"||e.key===" "){e.preventDefault(); trapHit(el);}});
+});
+
+function gotoReveal(mode){
+  unlock();
   var r=$("#reveal"); r.classList.add("on");
+  if(mode==="caught"){
+    var w=$("#hookedTitle"); w.textContent="Nice catch."; w.classList.add("caught-word");
+    r.setAttribute("aria-label","You reported the phish");
+    $("#revealLede").textContent="Winner, winner. You reported it instead of clicking — and that instinct is the entire defense.";
+    $("#revealSub").innerHTML="Nothing here was real, but your move was exactly right. Here’s what you caught: the email had six warning signs built into it.";
+    fireConfetti();
+  }
   r.scrollIntoView({behavior:reduce?"auto":"smooth"});
   setTimeout(function(){r.focus();},reduce?0:600);
 }
-$$("[data-trap]").forEach(function(el){
-  el.addEventListener("click",spring);
-  el.addEventListener("keydown",function(e){ if(e.key==="Enter"||e.key===" "){e.preventDefault();spring();}});
-});
 
-$("#skipSim").addEventListener("click",function(e){
-  e.preventDefault();
+function doSkip(e){
+  if(e) e.preventDefault();
+  sprung=true; markOpened(); unlock();
   $("#reveal").classList.add("on");
   $("#stakes").scrollIntoView({behavior:"smooth"});
-});
+}
+$("#skipSim").addEventListener("click",doSkip);
+$("#skipTop").addEventListener("click",doSkip);
+
+/* confetti */
+function fireConfetti(){
+  if(reduce) return;
+  var c=$("#confetti"); if(!c||!c.getContext) return;
+  c.classList.add("on");
+  var ctx=c.getContext("2d");
+  c.width=window.innerWidth; c.height=window.innerHeight;
+  var colors=["#FF8A3D","#2EC4A0","#1D4ED8","#E9EEF6","#F2555A","#FFD3B5"], parts=[];
+  for(var i=0;i<170;i++){
+    parts.push({x:Math.random()*c.width, y:-20-Math.random()*c.height*0.4,
+      w:6+Math.random()*7, h:9+Math.random()*9, vy:2.5+Math.random()*4.5, vx:-2.5+Math.random()*5,
+      rot:Math.random()*6.28, vr:-0.22+Math.random()*0.44, col:colors[i%colors.length]});
+  }
+  var t0=performance.now();
+  (function frame(now){
+    ctx.clearRect(0,0,c.width,c.height);
+    parts.forEach(function(p){
+      p.x+=p.vx; p.y+=p.vy; p.vy+=0.045; p.rot+=p.vr;
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot);
+      ctx.fillStyle=p.col; ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h); ctx.restore();
+    });
+    if(now-t0<3400) requestAnimationFrame(frame);
+    else { ctx.clearRect(0,0,c.width,c.height); c.classList.remove("on"); }
+  })(t0);
+}
 
 /* ---------- reveal flag toggles (click to re-reveal individually) ---------- */
 $$("#reveal .annotated mark.flag").forEach(function(m){
@@ -1047,15 +1188,49 @@ $$("#log li").forEach(function(li,i){
     var z=A*Math.sin(la1)+B*Math.sin(la2);
     return {la:Math.atan2(z,Math.sqrt(x*x+y*y))/D, lo:Math.atan2(y,x)/D};
   }
+  // Simplified continent outlines as [lon,lat] loops (coarse, decorative).
+  var CONTINENTS=[
+    /* North America */[[-168,66],[-156,71],[-128,70],[-95,69],[-82,62],[-64,60],[-55,52],[-56,47],[-67,45],[-70,41],[-75,35],[-81,25],[-90,29],[-97,26],[-97,20],[-105,20],[-110,23],[-114,30],[-120,34],[-124,40],[-124,48],[-128,51],[-140,59],[-155,58]],
+    /* Greenland */[[-45,60],[-30,60],[-20,70],[-25,78],[-40,83],[-58,80],[-55,70],[-50,64]],
+    /* South America */[[-81,8],[-72,11],[-60,6],[-50,0],[-35,-6],[-34,-8],[-39,-14],[-48,-25],[-54,-34],[-62,-40],[-68,-45],[-73,-52],[-75,-50],[-72,-44],[-71,-33],[-70,-20],[-76,-14],[-81,-5],[-81,2]],
+    /* Africa */[[-16,15],[-16,22],[-10,30],[0,36],[10,37],[20,33],[32,31],[35,24],[43,12],[51,12],[48,2],[42,-4],[40,-12],[35,-22],[27,-33],[20,-35],[14,-23],[9,-1],[5,5],[-5,5],[-12,8]],
+    /* Europe */[[-10,37],[-9,44],[-4,48],[0,49],[2,51],[8,54],[12,56],[10,63],[18,66],[26,66],[30,60],[28,55],[24,56],[18,55],[12,48],[16,42],[8,44],[0,43],[-6,43]],
+    /* West & Central Asia + Arabia */[[30,47],[40,52],[55,52],[62,45],[60,40],[52,40],[48,30],[57,25],[60,25],[57,18],[48,12],[43,13],[40,16],[35,30],[30,33],[27,40]],
+    /* India + South Asia */[[68,24],[72,20],[77,8],[81,8],[80,15],[88,22],[92,22],[85,27],[78,31],[72,28]],
+    /* Australia (far side for this view, culled when hidden) */[[114,-22],[122,-18],[131,-12],[142,-11],[147,-20],[150,-28],[146,-38],[138,-35],[129,-32],[118,-34],[114,-28]]
+  ];
+  function pip(lon,lat,poly){ // ray-cast point in polygon
+    var inside=false;
+    for(var i=0,j=poly.length-1;i<poly.length;j=i++){
+      var xi=poly[i][0],yi=poly[i][1],xj=poly[j][0],yj=poly[j][1];
+      if(((yi>lat)!==(yj>lat)) && (lon < (xj-xi)*(lat-yi)/(yj-yi)+xi)) inside=!inside;
+    }
+    return inside;
+  }
+  // precompute land points on a grid
+  var landPts=[];
+  for(var gla=-78;gla<=80;gla+=3.4){
+    for(var glo=-180;glo<180;glo+=3.4){
+      for(var ci=0;ci<CONTINENTS.length;ci++){ if(pip(glo,gla,CONTINENTS[ci])){ landPts.push([gla,glo]); break; } }
+    }
+  }
+  function drawLand(){
+    for(var i=0;i<landPts.length;i++){
+      var p=proj(landPts[i][0],landPts[i][1]);
+      if(p.z<=0.02) continue;
+      var a=0.25+0.5*p.z; // fade toward the limb
+      ctx.beginPath(); ctx.arc(p.x,p.y,1.35,0,Math.PI*2);
+      ctx.fillStyle="rgba(120,170,205,"+a.toFixed(2)+")"; ctx.fill();
+    }
+  }
   function drawGlobe(){
     ctx.clearRect(0,0,SIZE,SIZE);
     // sphere
     var g=ctx.createRadialGradient(cx-R*0.3,cy-R*0.3,R*0.2,cx,cy,R);
     g.addColorStop(0,"#16294a"); g.addColorStop(1,"#0a1526");
     ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2); ctx.fillStyle=g; ctx.fill();
-    ctx.strokeStyle="rgba(174,187,208,.25)"; ctx.lineWidth=1; ctx.stroke();
-    // graticule
-    ctx.strokeStyle="rgba(174,187,208,.14)"; ctx.lineWidth=1;
+    // faint graticule under the land
+    ctx.strokeStyle="rgba(174,187,208,.10)"; ctx.lineWidth=1;
     for(var la=-60;la<=60;la+=30){
       ctx.beginPath(); var started=false;
       for(var lo=-180;lo<=180;lo+=4){ var p=proj(la,lo); if(p.z>0){ if(!started){ctx.moveTo(p.x,p.y);started=true;} else ctx.lineTo(p.x,p.y);} else started=false; }
@@ -1066,6 +1241,10 @@ $$("#log li").forEach(function(li,i){
       for(var la2=-90;la2<=90;la2+=4){ var q=proj(la2,lo2); if(q.z>0){ if(!st){ctx.moveTo(q.x,q.y);st=true;} else ctx.lineTo(q.x,q.y);} else st=false; }
       ctx.stroke();
     }
+    drawLand();
+    // rim
+    ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2);
+    ctx.strokeStyle="rgba(174,187,208,.3)"; ctx.lineWidth=1; ctx.stroke();
   }
   function drawArc(a,b,prog,active){
     ctx.lineWidth=active?2.5:1.5;
@@ -1234,6 +1413,8 @@ var MESSAGES=[
   {phish:true,from:"CPU Registrar",addr:"registrar@cardinalplalns.edu",subj:"Enrollment verification needed",body:"Confirm your enrollment to avoid being dropped from classes.",link:{text:"Confirm enrollment",href:"cardinalplalns.edu/confirm"},flags:["Look closely: cardinalpl-a-l-ns.edu. The “i” is an “l”.","A threat to drop your classes creates panic.","Typosquatting a trusted domain is a top phishing trick."]}
 ];
 var gi=0, gscore=0, answered=false;
+function shuffle(a){ for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i];a[i]=a[j];a[j]=t; } return a; }
+shuffle(MESSAGES); // fresh order every visit so it's a real re-test
 var pips=$("#pips");
 MESSAGES.forEach(function(){ var s=document.createElement("span"); s.className="pip"; pips.appendChild(s); });
 function qr(){ // decorative pseudo-QR
@@ -1304,6 +1485,7 @@ function finishGame(){
 }
 $("#replay").addEventListener("click",function(){
   gi=0;gscore=0;$("#gScore").textContent="0";
+  shuffle(MESSAGES);
   $$(".pip").forEach(function(p){p.className="pip";});
   $("#final").classList.remove("on"); $("#gamePlay").style.display="";
   renderMail(); $("#game").scrollIntoView({behavior:"smooth"});
