@@ -1,0 +1,1489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hooked: You’d Click It. Here’s How Not To.</title>
+<meta name="description" content="An interactive phishing PSA for college students: get phished (safely), see what happens next, play Spot the Phish, and learn the S.L.O.W. habit.">
+<meta property="og:title" content="Hooked: You’d click it. Here’s how not to.">
+<meta property="og:description" content="An interactive phishing simulation and guide for college students.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Trust phase (the inbox, the safe ending) */
+  --sky:#F4F7FB; --paper:#FFFFFF; --ink:#14213A; --ink-soft:#46536B; --trust:#1D4ED8; --line:#D5DDEA;
+  /* Compromised phase (attacker's view) */
+  --deep:#0F1A2B; --deep-2:#16243A; --deep-3:#1E304B; --bone:#E9EEF6; --bone-soft:#AEBBD0;
+  /* Lure orange: the bait. Red: danger. Teal: safe. */
+  --lure:#FF8A3D; --lure-ink:#9A3412; --danger:#F2555A; --safe:#2EC4A0; --safe-ink:#0F6E58;
+  --flag-bg:#FFE3D3; --flag-line:#C2410C;
+  --display:"Bricolage Grotesque", "Arial Narrow", system-ui, sans-serif;
+  --body:"Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, "Cascadia Code", Menlo, monospace;
+  --measure:66ch;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  color-scheme:light;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-behavior:smooth; scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0; font-family:var(--body); font-size:1.125rem; line-height:1.6; color:var(--ink); background:var(--deep); -webkit-font-smoothing:antialiased}
+img,svg,canvas{max-width:100%}
+a{color:inherit}
+button{font:inherit; cursor:pointer}
+:focus-visible{outline:3px solid var(--lure); outline-offset:3px; border-radius:4px}
+.sr-only{position:absolute!important; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap}
+.wrap{width:min(1120px, 100% - 2.5rem); margin-inline:auto}
+.prose{max-width:var(--measure)}
+h1,h2,h3{font-family:var(--display); line-height:1.05; letter-spacing:-0.02em; margin:0 0 .5em}
+h2{font-size:clamp(2.2rem, 5.5vw, 4.2rem); font-weight:800}
+h3{font-size:clamp(1.3rem, 2.4vw, 1.7rem); font-weight:700; letter-spacing:-0.01em}
+p{margin:0 0 1em}
+.dark{background:var(--deep); color:var(--bone)}
+.dark .soft{color:var(--bone-soft)}
+.light{background:var(--sky); color:var(--ink)}
+.light .soft{color:var(--ink-soft)}
+section.block{padding:clamp(4.5rem, 10vw, 8rem) 0}
+.kicker{font-family:var(--display); font-weight:500; font-size:1.15rem; color:var(--lure); margin-bottom:.75rem}
+.light .kicker{color:var(--lure-ink)}
+
+/* ---------- Top utility bar ---------- */
+.utility{position:fixed; z-index:50; top:calc(env(safe-area-inset-top,0px) + .75rem); right:.75rem; display:flex; gap:.5rem}
+.pill{border:1px solid rgba(255,255,255,.25); background:rgba(15,26,43,.85); color:var(--bone); backdrop-filter:blur(8px); border-radius:999px; padding:.45rem .9rem; font-size:.9rem}
+.pill[aria-pressed="true"]{border-color:var(--lure); color:var(--lure)}
+
+/* ---------- 1. The hook: Outlook-style mail client ---------- */
+:root{--owa:#0F6CBD; --owa-dark:#0A4C86; --owa-bg:#faf9f8; --owa-line:#edebe9; --owa-ink:#242424; --owa-soft:#616161}
+#hook{min-height:100vh; min-height:100dvh; background:#D9DDE3; color:var(--owa-ink); padding:clamp(.5rem,2vw,1.5rem) 0 2rem; position:relative; overflow:hidden}
+.client{background:#fff; border:1px solid #c7ccd4; border-radius:8px; box-shadow:0 24px 50px -28px rgba(20,33,58,.45); overflow:hidden; display:flex; flex-direction:column; min-height:min(660px, 84vh); position:relative}
+/* Outlook top bar */
+.owa-bar{display:flex; align-items:center; gap:.7rem; background:var(--owa); color:#fff; padding:.55rem .9rem}
+.owa-waffle{display:grid; grid-template-columns:repeat(3,4px); grid-auto-rows:4px; gap:2px; opacity:.9}
+.owa-waffle i{width:4px; height:4px; background:#fff; border-radius:1px}
+.owa-word{font-weight:700; font-size:1.05rem; letter-spacing:.2px}
+.owa-search{flex:1; max-width:460px; background:rgba(255,255,255,.95); color:var(--owa-soft); border-radius:5px; padding:.4rem .7rem; font-size:.9rem; display:flex; align-items:center; gap:.5rem}
+.owa-me{margin-left:auto; width:32px; height:32px; border-radius:50%; background:#8A1C2B; color:#fff; display:grid; place-items:center; font-weight:700; font-size:.85rem}
+/* body grid: folders | list | reading */
+.owa-grid{display:grid; grid-template-columns:52px 210px 320px 1fr; flex:1; min-height:0}
+.owa-rail{background:var(--owa-bg); border-right:1px solid var(--owa-line); display:flex; flex-direction:column; align-items:center; padding:.6rem 0; gap:.4rem; color:var(--owa-soft)}
+.owa-rail .ric{width:34px; height:34px; border-radius:6px; display:grid; place-items:center}
+.owa-rail .ric.on{background:#e1ecf7; color:var(--owa)}
+.owa-folders{background:var(--owa-bg); border-right:1px solid var(--owa-line); padding:.8rem .6rem; font-size:.9rem; overflow:auto}
+.owa-new{background:var(--owa); color:#fff; border:0; border-radius:5px; padding:.5rem .9rem; font-weight:600; font-size:.88rem; display:flex; align-items:center; gap:.4rem; margin-bottom:.9rem}
+.owa-folders .fhead{color:var(--owa-soft); font-size:.78rem; font-weight:700; margin:.6rem .4rem .25rem}
+.folder{display:flex; justify-content:space-between; padding:.4rem .5rem; border-radius:5px; color:var(--owa-ink); cursor:default}
+.folder.on{background:#e1ecf7; color:var(--owa-dark); font-weight:700}
+.folder .ct{color:var(--owa-soft); font-weight:600}
+.owa-list{border-right:1px solid var(--owa-line); overflow:auto; background:#fff; min-width:0}
+.owa-list-head{display:flex; align-items:center; justify-content:space-between; padding:.6rem .9rem; border-bottom:1px solid var(--owa-line); font-weight:700; font-size:.95rem}
+.owa-list-head span{color:var(--owa-soft); font-weight:600; font-size:.82rem}
+.list{list-style:none; margin:0; padding:0}
+.row{display:grid; grid-template-columns:34px 1fr; gap:.65rem; align-items:start; padding:.7rem .9rem; border-bottom:1px solid #f3f2f1; color:var(--owa-soft); font-size:.92rem; width:100%; text-align:left; background:#fff; border-left:3px solid transparent; font-family:inherit; cursor:pointer}
+.row:hover{background:#f3f9ff}
+.row.sel{background:#e1ecf7; border-left-color:var(--owa)}
+.row .ravatar{width:34px; height:34px; border-radius:50%; display:grid; place-items:center; color:#fff; font-weight:700; font-size:.85rem}
+.row .rtop{display:flex; justify-content:space-between; gap:.5rem}
+.row .rfrom{font-weight:700; color:var(--owa-ink)}
+.row.unread .rfrom::before{content:""; display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--owa); margin-right:.4rem; vertical-align:middle}
+.row .rtime{font-size:.78rem; white-space:nowrap}
+.row .rsubj{color:var(--owa-ink); font-weight:600; margin:.1rem 0 .05rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.row .rprev{white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.row.new{animation:slideIn .5s ease-out both}
+@keyframes slideIn{from{opacity:0; transform:translateY(-12px)}to{opacity:1; transform:none}}
+
+/* reading pane */
+.owa-read{display:flex; flex-direction:column; min-width:0; background:#fff}
+.read-tools{display:flex; gap:.3rem; padding:.5rem .9rem; border-bottom:1px solid var(--owa-line); flex-wrap:wrap}
+.rtool{display:inline-flex; align-items:center; gap:.35rem; background:none; border:0; color:var(--owa-ink); border-radius:5px; padding:.4rem .6rem; font-size:.85rem; font-weight:600}
+.rtool:hover{background:#f3f2f1}
+.rtool.report{color:var(--owa)}
+.reader{padding:1.1rem clamp(1.1rem,2.5vw,2rem) 1.6rem; overflow:auto; flex:1}
+.reader h3{font-weight:700; font-size:1.4rem; line-height:1.25; margin:0 0 1rem; color:var(--owa-ink); font-family:var(--body); letter-spacing:0}
+.meta{display:flex; gap:.75rem; align-items:center; margin:0 0 1.4rem; font-size:.95rem; color:var(--owa-soft)}
+.avatar{width:42px; height:42px; border-radius:50%; background:#8A1C2B; color:#fff; display:grid; place-items:center; font-weight:700}
+.meta b{color:var(--owa-ink)}
+.addr{font-family:var(--mono); font-size:.85rem}
+.reader p{color:#323130}
+.cta-btn{display:inline-block; background:var(--owa); color:#fff; border:0; border-radius:5px; padding:.7rem 1.3rem; font-weight:600; margin:.4rem 0 1.2rem}
+.cta-btn:hover{background:var(--owa-dark)}
+.empty-read{margin:auto; text-align:center; color:var(--owa-soft); padding:2rem}
+.statusbar{font-family:var(--mono); font-size:.8rem; background:#f3f2f1; color:#323130; padding:.4rem .9rem; border-top:1px solid var(--owa-line); min-height:1.95rem; overflow:hidden; white-space:nowrap; text-overflow:ellipsis}
+
+/* toast (Outlook new-mail peek) */
+.toast{position:absolute; right:1rem; bottom:1rem; width:min(360px, calc(100% - 2rem)); background:#fff; border:1px solid #c7ccd4; border-left:4px solid var(--owa); border-radius:8px; box-shadow:0 18px 40px -16px rgba(20,33,58,.5); padding:.85rem 1rem; display:grid; grid-template-columns:38px 1fr; gap:.75rem; text-align:left; color:var(--owa-ink); z-index:5; transform:translateY(160%); transition:transform .5s cubic-bezier(.2,.9,.3,1.2)}
+.toast.show{transform:none}
+.toast .avatar{width:38px; height:38px; font-size:.8rem}
+.toast small{color:var(--owa-soft)}
+
+/* login overlay = "new browser tab" */
+.login-overlay{position:absolute; inset:0; background:#fff; display:flex; flex-direction:column; z-index:8; transform:translateY(100%); transition:transform .5s cubic-bezier(.2,.9,.3,1.1)}
+.login-overlay.show{transform:none}
+.browser-chrome{background:#dee1e6; padding:.5rem .7rem .0; }
+.btabs{display:flex; align-items:flex-end; gap:.3rem}
+.btab{background:#fff; border-radius:8px 8px 0 0; padding:.45rem .9rem; font-size:.82rem; color:#333; display:flex; align-items:center; gap:.5rem; max-width:240px}
+.btab .fav{width:14px;height:14px;border-radius:3px;background:var(--owa);color:#fff;display:grid;place-items:center;font-size:.6rem;font-weight:800}
+.urlbar{display:flex; align-items:center; gap:.5rem; background:#fff; margin:0; padding:.5rem .9rem; font-family:var(--mono); font-size:.86rem; color:#5f6368; border-bottom:1px solid #d9dce1}
+.urlbar .lock{color:#1e8e3e; flex:none}
+.urlbar .u-host{color:#202124}
+.login-body{flex:1; display:flex; background:#f3f3f3; overflow:auto}
+.login{margin:auto; width:min(400px, 92%); background:#fff; border:1px solid #e3e3e3; box-shadow:0 2px 8px rgba(0,0,0,.08); padding:2.2rem 2.4rem; }
+.login .crest{width:48px; height:48px; border-radius:7px; background:#8A1C2B; color:#fff; display:grid; place-items:center; font-weight:800; margin-bottom:1.1rem}
+.login h3{font-family:var(--body); letter-spacing:0; font-size:1.4rem; margin:0 0 .3rem; color:#1b1b1b}
+.login p{color:#5f6368; font-size:.95rem; margin:0 0 1.4rem}
+.field-label{font-weight:700; font-size:.9rem; color:#333}
+.fake-field{display:block; width:100%; text-align:left; background:#fff; border:0; border-bottom:2px solid #8A1C2B; border-radius:0; padding:.6rem .1rem; margin:.3rem 0 1.2rem; color:#9aa0a6; font-size:1rem}
+.fake-field:hover,.fake-field:focus{border-color:var(--owa)}
+.fake-submit{background:#8A1C2B; color:#fff; border:0; border-radius:4px; padding:.7rem 1.6rem; font-weight:600; float:right}
+
+.hook-note{display:flex; flex-wrap:wrap; gap:.4rem 1.2rem; align-items:center; justify-content:space-between; margin-top:1rem; font-size:.95rem; color:#46536B}
+.linklike{background:none; border:0; padding:0; color:var(--trust); text-decoration:underline; text-underline-offset:3px; font:inherit}
+
+/* glitch moment */
+.glitch{animation:glitch .9s steps(2,end) both}
+@keyframes glitch{
+  0%{filter:none; transform:none}
+  15%{filter:hue-rotate(160deg) contrast(2); transform:translate(-8px,2px) skewX(6deg); clip-path:inset(10% 0 55% 0)}
+  30%{filter:invert(1); transform:translate(6px,-3px); clip-path:inset(45% 0 20% 0)}
+  50%{filter:saturate(4) hue-rotate(-90deg); transform:translate(-4px,0) skewX(-8deg); clip-path:inset(0 0 70% 0)}
+  70%{filter:invert(1) contrast(3); transform:translate(3px,4px); clip-path:inset(60% 0 0 0)}
+  100%{filter:brightness(0); opacity:0}
+}
+
+/* reveal */
+#reveal{display:none; min-height:100vh; min-height:100dvh; background:var(--deep); color:var(--bone); padding:clamp(4rem,9vw,7rem) 0 4rem}
+#reveal.on{display:block}
+.hooked-word{font-family:var(--display); font-weight:800; font-size:clamp(5rem, 19vw, 15rem); line-height:.85; letter-spacing:-.05em; margin:0 0 .3em; color:var(--lure); font-variation-settings:"opsz" 96}
+.reveal-grid{display:grid; grid-template-columns:1.05fr 1fr; gap:clamp(2rem,5vw,4rem); align-items:start}
+.annotated{background:var(--paper); color:var(--ink); border-radius:12px; padding:1.3rem 1.4rem; font-size:1rem; position:relative}
+.annotated .meta{margin:.2rem 0 1rem}
+mark.flag{background:transparent; color:inherit; padding:0 .15em; border-radius:3px}
+.show-flags mark.flag,mark.flag.on{background:var(--flag-bg); box-shadow:inset 0 -2px 0 var(--flag-line)}
+mark.flag sup{display:none; font-family:var(--display); font-weight:800; color:var(--flag-line); font-size:.75em; margin-left:.15em}
+.show-flags mark.flag sup,mark.flag.on sup{display:inline}
+.flaglist{list-style:none; counter-reset:f; padding:0; margin:0}
+.flaglist li{counter-increment:f; display:grid; grid-template-columns:2.2rem 1fr; gap:.6rem; padding:.85rem 0; border-bottom:1px solid rgba(233,238,246,.12)}
+.flaglist li::before{content:counter(f); font-family:var(--display); font-weight:800; font-size:1.4rem; color:var(--lure); line-height:1.2}
+.flaglist b{color:var(--bone)}
+
+.btn{display:inline-flex; align-items:center; gap:.5rem; border-radius:10px; padding:.85rem 1.4rem; font-weight:700; border:2px solid transparent; text-decoration:none}
+.btn-lure{background:var(--lure); color:#2A1405}
+.btn-lure:hover{background:#FF9F5F}
+.btn-ghost{border-color:rgba(233,238,246,.35); color:var(--bone); background:transparent}
+.btn-ghost:hover{border-color:var(--bone)}
+.light .btn-ghost{border-color:#9FB0C9; color:var(--ink)}
+
+/* ---------- 2. Stakes ---------- */
+.stakes-lede{font-size:clamp(1.25rem,2.2vw,1.55rem); line-height:1.45; max-width:34ch; font-family:var(--display); font-weight:500; letter-spacing:-.01em}
+.chart{margin:3rem 0 1rem; display:grid; gap:1.1rem}
+.bar-row{display:grid; grid-template-columns:minmax(150px, 220px) 1fr; gap:1rem; align-items:center}
+.bar-label{font-size:1rem}
+.bar-track{height:44px; background:var(--deep-2); border-radius:6px; overflow:hidden; position:relative}
+.bar{height:100%; width:0; background:var(--deep-3); border-radius:6px; display:flex; align-items:center; justify-content:flex-end; padding-right:.8rem; font-family:var(--mono); font-weight:600; font-size:.95rem; white-space:nowrap; transition:width 1.4s cubic-bezier(.2,.8,.2,1)}
+.bar.top{background:var(--lure); color:#2A1405}
+.chart.in .bar{width:var(--w)}
+.chart-note{font-size:.95rem}
+.facts{display:grid; grid-template-columns:repeat(3,1fr); gap:0; margin-top:3.5rem; border-top:1px solid rgba(233,238,246,.15)}
+.fact{padding:1.5rem 1.5rem 0 0}
+.fact + .fact{padding-left:1.5rem; border-left:1px solid rgba(233,238,246,.15)}
+.fact strong{display:block; font-family:var(--display); font-size:clamp(2rem,4vw,2.9rem); font-weight:800; line-height:1; margin-bottom:.4rem; color:var(--bone)}
+.fact p{font-size:1rem; color:var(--bone-soft)}
+.local{margin-top:4rem; display:grid; grid-template-columns:auto 1fr; gap:1.5rem; align-items:start; background:var(--deep-2); border-left:4px solid var(--lure); padding:1.6rem 1.8rem; border-radius:0 12px 12px 0}
+.local .cy{font-family:var(--display); font-weight:800; font-size:1.1rem; color:var(--lure)}
+.cite{font-size:.82em; color:var(--bone-soft); text-decoration:none; border-bottom:1px dotted currentColor; white-space:nowrap}
+.light .cite{color:var(--ink-soft)}
+
+/* ---------- 3. Next 30 minutes ---------- */
+#timeline{background:#0A1322}
+.term{background:#050B14; border:1px solid #1F2E46; border-radius:12px; overflow:hidden; margin-top:2.5rem}
+.term-top{display:flex; gap:.45rem; padding:.7rem 1rem; border-bottom:1px solid #1F2E46}
+.term-top i{width:11px; height:11px; border-radius:50%; background:#2B3A54}
+.term-top span{margin-left:.6rem; font-family:var(--mono); font-size:.82rem; color:var(--bone-soft)}
+.log{list-style:none; margin:0; padding:1rem 0}
+.log li{display:grid; grid-template-columns:7.5rem 1fr; gap:1.2rem; padding:1.1rem 1.4rem; opacity:.18; transition:opacity .6s, background .6s}
+.log li.in{opacity:1}
+.log li.in.hot{background:rgba(255,138,61,.07)}
+.log time{font-family:var(--mono); font-weight:600; color:var(--lure); font-size:1rem; padding-top:.15rem}
+.log p{margin:0; max-width:60ch}
+.log b{color:#fff}
+.log code{font-family:var(--mono); font-size:.9em; background:#13213A; padding:.1rem .35rem; border-radius:4px; color:#FFD3B5}
+.log li.end time{color:var(--danger)}
+
+/* globe */
+.globe-wrap{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.05fr); gap:clamp(1.5rem,4vw,3rem); align-items:center; margin-top:2.5rem}
+.globe-stage{position:relative; aspect-ratio:1; max-width:460px; width:100%; margin-inline:auto}
+#globe{width:100%; height:100%; display:block}
+.globe-cap{font-family:var(--mono); font-size:.82rem; color:var(--bone-soft); text-align:center; margin-top:.6rem}
+.hops{list-style:none; margin:0; padding:0}
+.hops li{display:grid; grid-template-columns:auto 1fr; gap:.9rem; padding:.7rem 0; border-bottom:1px solid rgba(233,238,246,.12); opacity:.3; transition:opacity .4s}
+.hops li.on{opacity:1}
+.hops .hdot{width:13px; height:13px; border-radius:50%; margin-top:.35rem; border:2px solid var(--bone-soft)}
+.hops li.on .hdot{border-color:var(--lure); background:var(--lure); box-shadow:0 0 0 5px rgba(255,138,61,.2)}
+.hops .hwhere{font-family:var(--display); font-weight:700; font-size:1.05rem; color:var(--bone)}
+.hops .hwhat{font-size:.95rem; color:var(--bone-soft)}
+
+/* spread diagram */
+#spread{background:#0A1322}
+.spread-stage{margin-top:2.5rem; background:#050B14; border:1px solid #1F2E46; border-radius:14px; padding:1.5rem 1rem 1rem; position:relative; overflow:hidden}
+#spreadSvg{width:100%; height:auto; display:block}
+.spread-node{opacity:0; transition:opacity .5s}
+.spread-node.on{opacity:1}
+.spread-edge{stroke:#2B3A54; stroke-width:1.5; opacity:0; transition:opacity .5s}
+.spread-edge.on{opacity:.6}
+.spread-counter{display:flex; flex-wrap:wrap; gap:1.5rem 2.5rem; align-items:baseline; margin-top:1.8rem}
+.spread-counter .big{font-family:var(--display); font-weight:800; font-size:clamp(2.6rem,7vw,4.2rem); line-height:1; color:var(--lure)}
+.spread-counter .lbl{color:var(--bone-soft); max-width:30ch; font-size:1rem}
+.ongoing{display:inline-flex; align-items:center; gap:.5rem; background:rgba(242,85,90,.12); border:1px solid rgba(242,85,90,.4); color:#FF9CA0; border-radius:999px; padding:.35rem .9rem; font-size:.9rem; font-weight:600; margin-top:1.5rem}
+.ongoing .blip{width:9px; height:9px; border-radius:50%; background:var(--danger); animation:blip 1.4s infinite}
+@keyframes blip{0%,100%{opacity:1; box-shadow:0 0 0 0 rgba(242,85,90,.6)}50%{opacity:.6; box-shadow:0 0 0 7px rgba(242,85,90,0)}}
+
+/* ---------- 4. Insider ---------- */
+.insider-grid{display:grid; grid-template-columns:1fr 1fr; gap:clamp(2rem,6vw,5rem); align-items:start}
+.quote{font-family:var(--display); font-weight:500; font-size:clamp(1.5rem,2.8vw,2.1rem); line-height:1.25; letter-spacing:-.015em; margin:0 0 1.5rem}
+.levers{display:grid; grid-template-columns:repeat(4,1fr); gap:.5rem; margin:1.5rem 0 0}
+.lever{background:var(--deep-2); color:var(--bone); border:2px solid var(--deep-3); border-radius:10px; padding:.85rem .5rem; font-family:var(--display); font-weight:700; font-size:1.05rem}
+.lever[aria-selected="true"]{border-color:var(--lure); background:#2A2017; color:var(--lure)}
+.lever-panel{background:var(--deep-2); border-radius:12px; padding:1.4rem 1.5rem; margin-top:.75rem; min-height:12.5rem}
+.lever-panel .ex{font-family:var(--mono); font-size:.95rem; background:#0A1322; border-radius:8px; padding:.8rem 1rem; margin:.4rem 0 1rem; color:#FFD3B5}
+
+.compare{margin-top:5rem}
+.cmp-stage{position:relative; border-radius:12px; overflow:hidden; background:var(--paper); color:var(--ink); max-width:780px; user-select:none}
+.cmp-layer{padding:1.4rem 1.6rem 1.6rem; font-size:1rem; background:var(--paper)}
+.cmp-layer.fake{position:absolute; inset:0; clip-path:inset(0 calc(100% - var(--pos,50%)) 0 0); background:#FFF8F3}
+.cmp-tag{display:inline-block; font-family:var(--display); font-weight:800; font-size:.95rem; padding:.2rem .6rem; border-radius:6px; margin-bottom:.8rem}
+.cmp-layer.real .cmp-tag{background:#D7F5EC; color:var(--safe-ink); float:right}
+.cmp-layer.fake .cmp-tag{background:var(--flag-bg); color:var(--flag-line)}
+.cmp-row{display:grid; grid-template-columns:5.5rem 1fr; gap:.6rem; padding:.45rem 0; border-bottom:1px solid #EEF1F6}
+.cmp-row span:first-child{color:var(--ink-soft); font-size:.92rem}
+.cmp-handle{position:absolute; top:0; bottom:0; left:var(--pos,50%); width:3px; background:var(--lure); transform:translateX(-1.5px); pointer-events:none}
+.cmp-handle::after{content:""; position:absolute; top:50%; left:50%; width:38px; height:38px; border-radius:50%; background:var(--lure); transform:translate(-50%,-50%); box-shadow:0 0 0 5px rgba(255,138,61,.3)}
+.cmp-range{width:100%; max-width:780px; margin-top:1rem; accent-color:var(--lure)}
+
+/* ---------- 5. Game ---------- */
+#game{background:var(--deep-2)}
+.game-head{display:flex; flex-wrap:wrap; justify-content:space-between; align-items:end; gap:1rem}
+.scoreboard{display:flex; gap:1.5rem; font-family:var(--mono); font-size:.95rem; color:var(--bone-soft)}
+.scoreboard b{color:var(--bone); font-size:1.2rem}
+.pips{display:flex; gap:.35rem; margin:1.5rem 0 1rem}
+.pip{flex:1; height:6px; border-radius:3px; background:var(--deep-3)}
+.pip.cur{background:var(--bone-soft)}
+.pip.ok{background:var(--safe)}
+.pip.bad{background:var(--danger)}
+.game-grid{display:grid; grid-template-columns:1.25fr 1fr; gap:1.5rem; align-items:start}
+.mail{background:var(--paper); color:var(--ink); border-radius:12px; overflow:hidden; display:flex; flex-direction:column}
+.mail-body{padding:1.4rem 1.5rem 1.2rem; font-size:1.02rem}
+.mail-body h3{font-family:var(--body); letter-spacing:0; font-size:1.3rem; line-height:1.25}
+.mail .meta{margin:.6rem 0 1.1rem; flex-wrap:wrap}
+.addr{font-family:var(--mono); font-size:.85rem; color:var(--ink-soft); word-break:break-all}
+.mlink{background:none; border:0; padding:0; color:var(--trust); text-decoration:underline; text-underline-offset:3px; font:inherit}
+.qr{width:120px; height:120px; display:grid; grid-template-columns:repeat(11,1fr); gap:0; border:6px solid #fff; outline:1px solid var(--line); margin:.5rem 0 1rem; background:#fff}
+.qr i{background:#14213A}
+.qr i.w{background:#fff}
+.decide{display:grid; grid-template-columns:1fr 1fr; gap:.75rem}
+.decide button{border-radius:10px; padding:1rem; font-weight:700; font-size:1.05rem; border:2px solid}
+.b-phish{background:#3A1B1F; border-color:var(--danger)!important; color:#FFD7D8}
+.b-phish:hover{background:#4D2127}
+.b-legit{background:#123A33; border-color:var(--safe)!important; color:#C9F5E9}
+.b-legit:hover{background:#174A41}
+.decide button:disabled{opacity:.4; cursor:default}
+.verdict{margin-top:1rem; background:var(--deep); border-radius:12px; padding:1.3rem 1.4rem; display:none}
+.verdict.on{display:block}
+.verdict h3{font-size:1.5rem}
+.verdict .ok{color:var(--safe)}
+.verdict .bad{color:var(--danger)}
+.verdict ol{padding-left:1.2rem; margin:.5rem 0 1rem}
+.verdict li{margin-bottom:.45rem}
+.hint{font-size:.95rem; color:var(--bone-soft); margin-top:1rem}
+.final{display:none; text-align:left; padding:2rem 0}
+.final.on{display:block}
+.rank{font-family:var(--display); font-weight:800; font-size:clamp(3rem,9vw,6.5rem); line-height:.95; letter-spacing:-.04em; color:var(--lure); margin:.2em 0 .3em}
+
+/* ---------- 6. Beyond email ---------- */
+.tabs{display:flex; flex-wrap:wrap; gap:.5rem; margin:2rem 0 0; border-bottom:1px solid rgba(233,238,246,.15)}
+.tab{background:none; border:0; border-bottom:3px solid transparent; color:var(--bone-soft); padding:.8rem 1.1rem; font-family:var(--display); font-weight:700; font-size:1.15rem; margin-bottom:-1px}
+.tab[aria-selected="true"]{color:var(--bone); border-color:var(--lure)}
+.tabpanel{padding:2.5rem 0 0}
+.tabpanel[hidden]{display:none}
+.split{display:grid; grid-template-columns:minmax(260px, 340px) 1fr; gap:clamp(2rem,6vw,4.5rem); align-items:center}
+.phone{background:#05090F; border-radius:38px; padding:12px; box-shadow:0 30px 60px -25px rgba(0,0,0,.7); max-width:320px; margin-inline:auto; width:100%}
+.screen{background:#F2F3F7; border-radius:28px; min-height:520px; color:#111; padding:1rem .9rem; display:flex; flex-direction:column; position:relative; overflow:hidden}
+.notch{width:90px; height:22px; background:#05090F; border-radius:0 0 14px 14px; margin:-1rem auto .8rem}
+.sms-from{text-align:center; font-size:.85rem; color:#555; margin-bottom:1rem}
+.sms-from b{display:block; font-size:1rem; color:#111}
+.bubble{background:#E5E5EA; border-radius:18px 18px 18px 4px; padding:.7rem .9rem; font-size:.97rem; line-height:1.4; max-width:88%}
+.bubble .mlink{color:#0A58CA; word-break:break-all}
+.mfa-card{background:#fff; border-radius:16px; padding:1rem; box-shadow:0 10px 25px -10px rgba(0,0,0,.35); margin-top:auto; margin-bottom:auto; text-align:center}
+.mfa-card.shake{animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-6px)}50%{transform:translateX(6px)}75%{transform:translateX(-3px)}}
+.mfa-card h4{margin:.3rem 0; font-size:1.05rem}
+.mfa-card p{font-size:.88rem; color:#555; margin:.3rem 0 .9rem}
+.mfa-actions{display:grid; grid-template-columns:1fr 1fr; gap:.5rem}
+.mfa-actions button{border-radius:10px; padding:.7rem; border:0; font-weight:700}
+.mfa-deny{background:#FCE8E8; color:#9B1C1C}
+.mfa-approve{background:#1D4ED8; color:#fff}
+.mfa-count{position:absolute; top:3rem; left:0; right:0; text-align:center; font-family:var(--mono); font-size:.8rem; color:#777}
+.mfa-result{margin:auto; text-align:center; padding:1rem}
+.mfa-result h4{font-size:1.4rem; margin:.4rem 0}
+.vm{background:var(--deep-2); border-radius:14px; padding:1.4rem; max-width:340px; margin-inline:auto; width:100%}
+.vm-top{display:flex; gap:.8rem; align-items:center; margin-bottom:1rem}
+.vm-ic{width:46px; height:46px; border-radius:50%; background:var(--deep-3); display:grid; place-items:center}
+.wave{display:flex; align-items:center; gap:3px; height:48px; margin:.8rem 0 1rem}
+.wave i{flex:1; background:var(--bone-soft); border-radius:2px; height:20%; transition:height .15s}
+.wave.play i{background:var(--lure); animation:wv 1s ease-in-out infinite}
+@keyframes wv{50%{height:100%}}
+.transcript{font-size:1rem; border-left:3px solid var(--deep-3); padding-left:1rem; color:var(--bone)}
+.callout{background:var(--deep-2); border-radius:12px; padding:1.2rem 1.4rem; margin-top:1rem}
+.callout b{color:var(--lure)}
+
+/* ---------- 7. S.L.O.W. ---------- */
+#slow{background:var(--sky); color:var(--ink)}
+#slow h2{color:var(--ink)}
+.slow-word{font-family:var(--display); font-weight:800; font-size:clamp(5rem,18vw,13rem); line-height:.8; letter-spacing:-.04em; color:var(--ink); margin:.1em 0 .25em; display:flex; gap:.04em}
+.slow-word span{transition:color .4s}
+.slow-word span.lit{color:var(--trust)}
+.steps{list-style:none; padding:0; margin:2rem 0 0; display:grid; grid-template-columns:repeat(2,1fr); gap:1rem}
+.step{background:var(--paper); border:1.5px solid var(--line); border-radius:14px; padding:1.3rem 1.4rem; display:grid; grid-template-columns:auto 1fr; gap:1rem; align-items:start; transition:border-color .3s}
+.step.checked{border-color:var(--trust)}
+.step .ltr{font-family:var(--display); font-weight:800; font-size:2.6rem; line-height:.9; color:var(--trust)}
+.step h3{font-size:1.35rem; margin:0 0 .3rem}
+.step p{margin:0 0 .8rem; color:var(--ink-soft); font-size:1.02rem}
+.step label{display:flex; gap:.6rem; align-items:center; font-weight:700; cursor:pointer; color:var(--ink)}
+.step input{width:1.3rem; height:1.3rem; accent-color:var(--trust)}
+.report{margin-top:3rem; display:grid; grid-template-columns:1fr 1fr; gap:2rem; background:var(--paper); border:1.5px solid var(--line); border-radius:14px; padding:1.6rem 1.8rem}
+.report ol{margin:.3rem 0 0; padding-left:1.2rem}
+.badge-zone{margin-top:4rem; display:grid; grid-template-columns:auto 1fr; gap:2rem; align-items:center}
+#badge{width:300px; height:300px; border-radius:20px; background:#E3E9F3}
+.badge-zone .btn-lure{background:var(--trust); color:#fff}
+.badge-zone .btn-lure:hover{background:#1E40AF}
+.badge-zone .btn[aria-disabled="true"]{opacity:.45; pointer-events:none}
+
+/* ---------- 8. Sources ---------- */
+#sources{background:var(--paper); color:var(--ink); padding:4.5rem 0}
+#sources h2{font-size:clamp(1.8rem,3.5vw,2.5rem)}
+.works{padding-left:2.2em; text-indent:-2.2em; list-style:none; margin:0; max-width:80ch}
+.works li{margin-bottom:.9rem; font-size:1rem}
+.works a{color:var(--trust); word-break:break-word}
+.disclose{margin-top:2.5rem; font-size:.95rem; color:var(--ink-soft); max-width:70ch}
+footer{background:var(--deep); color:var(--bone-soft); padding:2rem 0; font-size:.95rem}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1040px){
+  .owa-grid{grid-template-columns:52px 290px 1fr}
+  .owa-folders{display:none}
+}
+@media (max-width: 900px){
+  .reveal-grid,.insider-grid,.game-grid,.split,.report,.badge-zone,.globe-wrap{grid-template-columns:1fr}
+  .facts{grid-template-columns:1fr}
+  .fact + .fact{padding-left:0; border-left:0; border-top:1px solid rgba(233,238,246,.15)}
+  .steps{grid-template-columns:1fr}
+  .levers{grid-template-columns:repeat(2,1fr)}
+  .log li{grid-template-columns:1fr; gap:.3rem}
+  .bar-row{grid-template-columns:1fr; gap:.35rem}
+  .local{grid-template-columns:1fr}
+}
+@media (max-width: 720px){
+  .owa-grid{grid-template-columns:1fr; grid-auto-rows:auto}
+  .owa-rail{display:none}
+  .owa-list{max-height:40vh}
+  .owa-read{min-height:46vh}
+  .client{min-height:auto}
+}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important; scroll-behavior:auto!important}
+  .log li,.hops li,.spread-node,.spread-edge{opacity:1}
+}
+</style>
+</head>
+<body>
+<a class="sr-only" href="#stakes">Skip the simulation</a>
+
+<div class="utility">
+  <button class="pill" id="soundBtn" aria-pressed="false">Sound off</button>
+</div>
+
+<!-- ================= 1. THE HOOK ================= -->
+<header id="hook" aria-label="Phishing simulation">
+  <div class="wrap">
+    <div class="client" id="client">
+      <!-- Outlook top bar -->
+      <div class="owa-bar">
+        <span class="owa-waffle" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+        <span class="owa-word">Outlook</span>
+        <span class="owa-search"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path fill="#616161" d="m21 20-5.2-5.2a7 7 0 1 0-1.4 1.4L20 21zM5 10a5 5 0 1 1 10 0A5 5 0 0 1 5 10"/></svg>Search</span>
+        <span class="owa-me" aria-hidden="true">J</span>
+      </div>
+
+      <div class="owa-grid">
+        <!-- app rail -->
+        <nav class="owa-rail" aria-hidden="true">
+          <span class="ric on" title="Mail"><svg width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M3 5h18v14H3zm2 2v.4l7 4.2 7-4.2V7l-7 4.2z"/></svg></span>
+          <span class="ric" title="Calendar"><svg width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M7 2v2H4v18h16V4h-3V2h-2v2H9V2zM6 8h12v12H6z"/></svg></span>
+          <span class="ric" title="People"><svg width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8m0 2c-4 0-8 2-8 5v1h16v-1c0-3-4-5-8-5"/></svg></span>
+        </nav>
+
+        <!-- folders -->
+        <aside class="owa-folders" aria-hidden="true">
+          <button class="owa-new">+ New mail</button>
+          <div class="fhead">Favorites</div>
+          <div class="folder on"><span>Inbox</span><span class="ct" id="inboxCount">3</span></div>
+          <div class="folder"><span>Sent Items</span></div>
+          <div class="folder"><span>Drafts</span></div>
+          <div class="fhead">Folders</div>
+          <div class="folder"><span>Deleted Items</span></div>
+          <div class="folder"><span>Junk Email</span></div>
+          <div class="folder"><span>Archive</span></div>
+        </aside>
+
+        <!-- message list -->
+        <section class="owa-list" aria-label="Inbox">
+          <div class="owa-list-head">Inbox <span>Filter</span></div>
+          <ul class="list" id="inboxList">
+            <li><button class="row" data-open="canvas">
+              <span class="ravatar" style="background:#E8453C">C</span>
+              <span><span class="rtop"><span class="rfrom">Canvas</span><span class="rtime">8:41 PM</span></span>
+              <span class="rsubj">ENGL 250: Unit 3 feedback posted</span>
+              <span class="rprev">Your instructor left comments on your draft…</span></span>
+            </button></li>
+            <li><button class="row unread" id="phishRow" data-open="phish">
+              <span class="ravatar" style="background:#8A1C2B">FA</span>
+              <span><span class="rtop"><span class="rfrom">CPU Financial Aid Office</span><span class="rtime">now</span></span>
+              <span class="rsubj">Action required: Fall disbursement on hold</span>
+              <span class="rprev">Your disbursement has been placed on hold…</span></span>
+            </button></li>
+            <li><button class="row" data-open="rec">
+              <span class="ravatar" style="background:#2E7D32">R</span>
+              <span><span class="rtop"><span class="rfrom">Rec Services</span><span class="rtime">4:15 PM</span></span>
+              <span class="rsubj">Intramural sign-ups close Friday</span>
+              <span class="rprev">Rosters are due Friday at 5 p.m…</span></span>
+            </button></li>
+          </ul>
+        </section>
+
+        <!-- reading pane -->
+        <section class="owa-read" aria-label="Reading pane">
+          <div class="read-tools" id="readTools" hidden>
+            <button class="rtool"><svg width="15" height="15" viewBox="0 0 24 24"><path fill="currentColor" d="M10 9V5l-7 7 7 7v-4c5 0 8 2 10 5-1-6-5-11-10-11"/></svg>Reply</button>
+            <button class="rtool"><svg width="15" height="15" viewBox="0 0 24 24"><path fill="currentColor" d="M14 9V5l7 7-7 7v-4C9 12 6 14 4 17c1-6 5-8 10-8"/></svg>Forward</button>
+            <button class="rtool report" id="reportBtn"><svg width="15" height="15" viewBox="0 0 24 24"><path fill="currentColor" d="M1 21 12 2l11 19zm11-3h2v2h-2zm0-6h2v4h-2z"/></svg>Report</button>
+          </div>
+          <div class="reader" id="reader">
+            <div class="empty-read" id="emptyRead">
+              <svg width="54" height="54" viewBox="0 0 24 24" style="opacity:.3"><path fill="#616161" d="M3 5h18v14H3zm2 2v.4l7 4.2 7-4.2V7l-7 4.2z"/></svg>
+              <p>Select an item to read.</p>
+            </div>
+          </div>
+          <div class="statusbar" id="status1" aria-live="polite">&nbsp;</div>
+        </section>
+      </div>
+
+      <!-- new-mail toast -->
+      <button class="toast" id="toast" aria-label="New message from CPU Financial Aid Office: Action required, Fall disbursement on hold. Open message.">
+        <span class="avatar" aria-hidden="true">FA</span>
+        <span><b>CPU Financial Aid Office</b><br>Action required: Fall disbursement on hold<br><small>now · Inbox</small></span>
+      </button>
+
+      <!-- login overlay: a simulated new browser tab -->
+      <div class="login-overlay" id="loginOverlay" aria-hidden="true">
+        <div class="browser-chrome">
+          <div class="btabs"><span class="btab"><span class="fav">CP</span> NetID Sign-in</span></div>
+        </div>
+        <div class="urlbar">
+          <svg class="lock" width="13" height="13" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M6 10V8a6 6 0 1 1 12 0v2h1v12H5V10h1Zm2 0h8V8a4 4 0 1 0-8 0v2Z"/></svg>
+          <span><span class="u-host">cardinalplains-edu.com</span>/netid/login</span>
+        </div>
+        <div class="login-body">
+          <div class="login">
+            <div class="crest">CP</div>
+            <h3>Cardinal Plains University</h3>
+            <p>Sign in with your NetID to continue</p>
+            <span class="field-label" id="lbl1">NetID</span>
+            <button class="fake-field" aria-describedby="lbl1" data-trap>yourname@cardinalplains.edu</button>
+            <span class="field-label" id="lbl2">Password</span>
+            <button class="fake-field" aria-describedby="lbl2" data-trap>Enter your password</button>
+            <button class="fake-submit" data-trap>Sign in</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hook-note">
+      <span>A new message just arrived in your inbox. Open it to begin. This is a phishing simulation: nothing you click or type here is collected, stored, or sent anywhere.</span>
+      <button class="linklike" id="skipSim">Skip the simulation</button>
+    </div>
+  </div>
+</header>
+
+<!-- ================= REVEAL ================= -->
+<section id="reveal" aria-labelledby="hookedTitle" tabindex="-1">
+  <div class="wrap">
+    <p class="hooked-word" id="hookedTitle">Hooked.</p>
+    <div class="reveal-grid">
+      <div>
+        <p class="stakes-lede">That’s all it takes. You were one keystroke away from handing a stranger your student account.</p>
+        <p class="soft prose">Relax. Those boxes were never real fields, and nothing you did was recorded. But the email you just trusted had six warning signs in it. Here they are.</p>
+        <div class="annotated show-flags">
+          <h3 style="font-family:var(--body);letter-spacing:0;font-size:1.2rem">Action required: Fall disbursement on hold</h3>
+          <div class="meta"><span class="avatar">FA</span><span><b>CPU Financial Aid Office</b><br><span class="addr"><mark class="flag">finaid@cardinalplains<b>-edu.com</b><sup>1</sup></mark></span></span></div>
+          <p><mark class="flag">Hi Student,<sup>2</sup></mark></p>
+          <p>Your Fall 2026 financial aid disbursement has been placed on hold due to an incomplete identity verification.</p>
+          <p><mark class="flag">To avoid cancellation of your refund,<sup>3</sup></mark> please verify your NetID <mark class="flag">within 24 hours.<sup>4</sup></mark></p>
+          <p><mark class="flag">[Verify my account]<sup>5</sup></mark> <mark class="flag">and sign in on a page that isn’t your school’s<sup>6</sup></mark></p>
+        </div>
+      </div>
+      <div>
+        <ol class="flaglist">
+          <li><span><b>A lookalike address.</b> The real school domain is <code>cardinalplains.edu</code>. This one is <code>cardinalplains-edu.com</code>. One hyphen and a “.com” do all the work.</span></li>
+          <li><span><b>No name.</b> Your financial aid office knows exactly who you are. “Hi Student” means the sender doesn’t.</span></li>
+          <li><span><b>A threat.</b> Fear of losing money shuts down careful thinking. That’s the point.</span></li>
+          <li><span><b>A countdown.</b> A 24-hour deadline is designed to make you act before you check.</span></li>
+          <li><span><b>A button instead of directions.</b> Hovering showed it led off campus. Real offices tell you to log in the way you normally do.</span></li>
+          <li><span><b>A padlock that means nothing.</b> The fake login had a lock icon too. HTTPS only means the connection is encrypted, not that the site is honest.</span></li>
+        </ol>
+        <p style="margin-top:2rem"><a class="btn btn-lure" href="#stakes">See what happens next</a></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<main>
+<!-- ================= 2. STAKES ================= -->
+<section id="stakes" class="block dark" aria-labelledby="stakesTitle">
+  <div class="wrap">
+    <p class="kicker">This isn’t a hypothetical</p>
+    <h2 id="stakesTitle">Phishing is the most reported internet crime in America.</h2>
+    <p class="stakes-lede">Not ransomware. Not hackers in hoodies breaking encryption. Emails and texts asking people to click.</p>
+
+    <figure style="margin:0">
+      <div class="chart" id="crimeChart" role="img" aria-label="Bar chart of the most reported internet crime types to the FBI in 2025: phishing and spoofing 191,561 complaints; extortion 89,129; investment fraud 72,984.">
+        <div class="bar-row"><span class="bar-label">Phishing and spoofing</span><div class="bar-track"><div class="bar top" style="--w:100%">191,561</div></div></div>
+        <div class="bar-row"><span class="bar-label">Extortion</span><div class="bar-track"><div class="bar" style="--w:46.5%">89,129</div></div></div>
+        <div class="bar-row"><span class="bar-label">Investment fraud</span><div class="bar-track"><div class="bar" style="--w:38.1%">72,984</div></div></div>
+      </div>
+      <figcaption class="chart-note soft">Complaints reported to the FBI’s Internet Crime Complaint Center in 2025, top three crime types. <a class="cite" href="#src-ic3">FBI IC3, 2025</a></figcaption>
+    </figure>
+
+    <div class="facts">
+      <div class="fact"><strong>$20.9B</strong><p>lost to internet crime reported to the FBI in 2025, up 26% from the year before. <a class="cite" href="#src-ic3">FBI IC3</a></p></div>
+      <div class="fact"><strong>60%</strong><p>of data breaches involved a human action, like clicking a link or handing over a password. <a class="cite" href="#src-dbir">Verizon DBIR</a></p></div>
+      <div class="fact"><strong>$362.9M</strong><p>lost to employment scams in 2025, the fake job offers that flood student inboxes. <a class="cite" href="#src-ic3">FBI IC3</a></p></div>
+    </div>
+
+    <div class="local">
+      <span class="cy">Closer to home</span>
+      <div>
+        <p>In October 2024, Iowa State investigated a phishing attack in which some people entered their ISU login on a fake page. The bait email was titled “Email System Maintenance,” and it came from a real <code>iastate.edu</code> account the attackers had already taken over. <a class="cite" href="#src-isu24">ISU ITS</a></p>
+        <p style="margin:0">And it doesn’t stop at one inbox. Stolen student accounts are used to email the rest of campus — fake job offers, or links to download “remote support” software — so each compromised account becomes bait for the next. <a class="cite" href="#src-isd">Iowa State Daily</a></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 3. NEXT 30 MINUTES ================= -->
+<section id="timeline" class="block dark" aria-labelledby="tlTitle">
+  <div class="wrap">
+    <p class="kicker">From the attacker’s side of the screen</p>
+    <h2 id="tlTitle">What happens in the next 30 minutes.</h2>
+    <p class="soft prose">Say you hadn’t stopped. The second you hit “Sign in,” your password doesn’t go to one place. It’s relayed across the world in seconds, so no single server points back to the person who took it.</p>
+
+    <div class="globe-wrap">
+      <div>
+        <div class="globe-stage">
+          <canvas id="globe" width="920" height="920" role="img" aria-label="An animated globe showing stolen credentials being relayed from Ames, Iowa, through servers in Amsterdam, Lagos, and Moscow before reaching the attacker."></canvas>
+        </div>
+        <p class="globe-cap" id="globeCap">tracing credential relay…</p>
+      </div>
+      <ol class="hops" id="hopList">
+        <li data-hop="0"><span class="hdot"></span><span><span class="hwhere">Ames, Iowa — you</span><span class="hwhat">You submit your NetID and password on the fake page.</span></span></li>
+        <li data-hop="1"><span class="hdot"></span><span><span class="hwhere">Amsterdam — proxy</span><span class="hwhat">The data is bounced through a rented server to hide its origin.</span></span></li>
+        <li data-hop="2"><span class="hdot"></span><span><span class="hwhere">Lagos — relay</span><span class="hwhat">Passed again through a compromised host in another country.</span></span></li>
+        <li data-hop="3"><span class="hdot"></span><span><span class="hwhere">Moscow — collector</span><span class="hwhat">Your login lands in a database with thousands of others.</span></span></li>
+        <li data-hop="4"><span class="hdot"></span><span><span class="hwhere">The attacker — anywhere</span><span class="hwhat">They buy or use it. You never find out where it went.</span></span></li>
+      </ol>
+    </div>
+
+    <h3 style="margin-top:3.5rem">Then the next 30 minutes.</h3>
+    <div class="term">
+      <div class="term-top" aria-hidden="true"><i></i><i></i><i></i><span>session log</span></div>
+      <ol class="log" id="log">
+        <li><time>9:02 PM</time><p>You type your NetID and password into the fake page. <b>The attacker’s server saves them instantly.</b> The page then redirects you to the real portal, so nothing seems off.</p></li>
+        <li><time>9:03 PM</time><p>They sign in as you. Your phone buzzes with an approval request. You literally just logged in, so you tap <b>Approve</b>.</p></li>
+        <li class="hot"><time>9:05 PM</time><p>They create an inbox rule: any email containing <code>aid</code>, <code>bank</code>, or <code>password</code> skips your inbox and goes to a folder you never open. <b>You’ll never see the warnings.</b></p></li>
+        <li><time>9:09 PM</time><p>They open your student portal and change where your refund gets deposited.</p></li>
+        <li class="hot"><time>9:14 PM</time><p>Your account emails a huge list of students a link to “install the new remote-support app.” It comes from a real campus address, so <b>your classmates trust it and click</b>.</p></li>
+        <li><time>9:31 PM</time><p>You go to bed. Nothing looks wrong.</p></li>
+        <li class="end hot"><time>Tomorrow</time><p><b>A handful of the students who clicked are now compromised too</b> — and their accounts start sending the same link. The chain keeps going without you.</p></li>
+      </ol>
+    </div>
+    <p class="soft" style="font-size:.95rem; margin-top:1rem">A composite scenario built from account-takeover patterns described by Iowa State ITS and the FBI. <a class="cite" href="#src-isu23">ISU ITS</a> <a class="cite" href="#src-fbi-jobs">FBI IC3</a></p>
+  </div>
+</section>
+
+<!-- ================= 3b. SPREAD ================= -->
+<section id="spread" class="block dark" aria-labelledby="spreadTitle">
+  <div class="wrap">
+    <p class="kicker">One click doesn’t stay one click</p>
+    <h2 id="spreadTitle">How a single account takes a campus down with it.</h2>
+    <p class="prose soft">This is the part people miss. The danger isn’t only your account — it’s that your account becomes the next attacker. At a school the size of Iowa State, a few accounts get taken over on a routine basis. Each one is used to email long lists of students a link to download “remote support” or “security” software. A fraction of those students install it or hand over their login, and <b>their</b> accounts send it onward. The chain never fully stops.</p>
+
+    <div class="spread-stage">
+      <svg id="spreadSvg" viewBox="0 0 900 360" role="img" aria-label="A branching diagram: one compromised account emails many students; a few of those become compromised and each emails many more, spreading outward in waves.">
+        <g id="spreadEdges"></g>
+        <g id="spreadNodes"></g>
+      </svg>
+    </div>
+
+    <div class="spread-counter">
+      <div><div class="big" id="spreadCount">1</div><div class="lbl">compromised account becomes…</div></div>
+      <div><div class="big" id="spreadCount2">0</div><div class="lbl">students sent a malicious link in the first wave alone</div></div>
+    </div>
+    <div class="ongoing"><span class="blip" aria-hidden="true"></span>This pattern is still active on campuses today</div>
+    <p class="soft" style="font-size:.95rem; margin-top:1.5rem">Illustration of a self-spreading account-takeover chain. Iowa State ITS has described being overwhelmed by phishing reports and has documented attackers using already-compromised <code>iastate.edu</code> accounts to reach the rest of campus. <a class="cite" href="#src-isu23">ISU ITS</a> <a class="cite" href="#src-isu24">ISU ITS</a></p>
+  </div>
+</section>
+
+<!-- ================= 4. INSIDER ================= -->
+<section id="insider" class="block dark" aria-labelledby="inTitle">
+  <div class="wrap">
+    <div class="insider-grid">
+      <div>
+        <p class="kicker">Why smart people click</p>
+        <h2 id="inTitle">I’ve written emails like this on purpose.</h2>
+        <p class="quote">Phishing doesn’t beat your intelligence. It beats your attention.</p>
+        <div class="prose">
+          <p>I’m Aden, a Cybersecurity Engineering student at Iowa State. This past summer I worked as an offensive security intern running authorized social engineering assessments — companies hire a team to phish and call their own employees, with permission, so the weak spots turn up before criminals find them. I’m heading back next summer to run more phishing and vishing engagements.</p>
+          <p class="soft">The lesson from the other side: people don’t click because they’re careless. They click because a good phish pulls on one of four levers that make your brain skip the checking step. Pick one.</p>
+        </div>
+      </div>
+      <div>
+        <div class="levers" role="tablist" aria-label="Psychological levers">
+          <button class="lever" role="tab" aria-selected="true" aria-controls="leverPanel" data-lever="0">Urgency</button>
+          <button class="lever" role="tab" aria-selected="false" aria-controls="leverPanel" data-lever="1">Authority</button>
+          <button class="lever" role="tab" aria-selected="false" aria-controls="leverPanel" data-lever="2">Fear</button>
+          <button class="lever" role="tab" aria-selected="false" aria-controls="leverPanel" data-lever="3">Reward</button>
+        </div>
+        <div class="lever-panel" id="leverPanel" role="tabpanel" aria-live="polite"></div>
+      </div>
+    </div>
+
+    <div class="compare">
+      <h3>Drag to compare. One of these is real.</h3>
+      <p class="soft prose">Same school, same subject line. The differences are small on purpose.</p>
+      <div class="cmp-stage" id="cmpStage" style="--pos:50%">
+        <div class="cmp-layer real" aria-label="Real email">
+          <span class="cmp-tag">Real</span>
+          <div class="cmp-row"><span>From</span><span class="addr">finaid@cardinalplains.edu</span></div>
+          <div class="cmp-row"><span>Greeting</span><span>Hi Jordan,</span></div>
+          <div class="cmp-row"><span>Ask</span><span>Log in to MyCPU the way you normally do to review your aid.</span></div>
+          <div class="cmp-row"><span>Link</span><span>None</span></div>
+          <div class="cmp-row"><span>Deadline</span><span>Before classes begin Aug. 24</span></div>
+        </div>
+        <div class="cmp-layer fake" aria-label="Fake email">
+          <span class="cmp-tag">Fake</span>
+          <div class="cmp-row"><span>From</span><span class="addr">finaid@cardinalplains-edu.com</span></div>
+          <div class="cmp-row"><span>Greeting</span><span>Hi Student,</span></div>
+          <div class="cmp-row"><span>Ask</span><span>Verify your NetID or your refund will be cancelled.</span></div>
+          <div class="cmp-row"><span>Link</span><span>“Verify my account” button</span></div>
+          <div class="cmp-row"><span>Deadline</span><span>Within 24 hours</span></div>
+        </div>
+        <div class="cmp-handle" aria-hidden="true"></div>
+      </div>
+      <label class="sr-only" for="cmpRange">Comparison slider: drag to reveal more of the fake or the real email</label>
+      <input class="cmp-range" id="cmpRange" type="range" min="0" max="100" value="50">
+    </div>
+  </div>
+</section>
+
+<!-- ================= 5. GAME ================= -->
+<section id="game" class="block dark" aria-labelledby="gameTitle">
+  <div class="wrap">
+    <div class="game-head">
+      <div>
+        <p class="kicker">Your turn</p>
+        <h2 id="gameTitle" style="margin:0">Spot the phish.</h2>
+      </div>
+      <div class="scoreboard" aria-live="polite"><span>Message <b id="gIdx">1</b> of 8</span><span>Score <b id="gScore">0</b></span></div>
+    </div>
+    <div class="pips" id="pips" aria-hidden="true"></div>
+
+    <div id="gamePlay">
+      <div class="game-grid">
+        <div class="mail" id="gMail"></div>
+        <div>
+          <div class="decide">
+            <button class="b-phish" id="bPhish">Report phish</button>
+            <button class="b-legit" id="bLegit">Looks legit</button>
+          </div>
+          <p class="hint">Tip: hover over or tab to any link to see where it really goes, shown in the bar under the message.</p>
+          <div class="verdict" id="verdict" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="final" id="final" aria-live="polite">
+      <p class="soft" style="margin:0">Your rank</p>
+      <p class="rank" id="rankName"></p>
+      <p class="stakes-lede" id="rankLine"></p>
+      <p style="margin-top:1.5rem; display:flex; gap:.75rem; flex-wrap:wrap"><button class="btn btn-ghost" id="replay">Play again</button><a class="btn btn-lure" href="#beyond">Keep going</a></p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 6. BEYOND EMAIL ================= -->
+<section id="beyond" class="block dark" aria-labelledby="byTitle">
+  <div class="wrap">
+    <p class="kicker">It’s not just email anymore</p>
+    <h2 id="byTitle">The hook comes in three new shapes.</h2>
+    <div class="tabs" role="tablist" aria-label="Other kinds of phishing">
+      <button class="tab" role="tab" id="t-sms" aria-controls="p-sms" aria-selected="true">Texts</button>
+      <button class="tab" role="tab" id="t-mfa" aria-controls="p-mfa" aria-selected="false" tabindex="-1">Push spam</button>
+      <button class="tab" role="tab" id="t-vm" aria-controls="p-vm" aria-selected="false" tabindex="-1">Voicemail</button>
+    </div>
+
+    <div class="tabpanel" id="p-sms" role="tabpanel" aria-labelledby="t-sms">
+      <div class="split">
+        <div class="phone"><div class="screen">
+          <div class="notch"></div>
+          <div class="sms-from"><b>+1 (689) 204-5531</b>Text Message · Today 2:14 PM</div>
+          <div class="bubble">ParcelPost: Your package is being held at our facility due to an incomplete address. Update within 12 hrs to avoid return to sender: <button class="mlink" id="smsLink">parcelpost-redelivery.info/us</button></div>
+        </div></div>
+        <div class="prose">
+          <h3>Smishing: phishing by text.</h3>
+          <p>Texts feel personal, links are shortened or hidden, and your phone screen is too small to show the full address. That’s why they work.</p>
+          <p class="soft" id="smsResult">Tap the link in the text to see what’s wrong with it.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabpanel" id="p-mfa" role="tabpanel" aria-labelledby="t-mfa" hidden>
+      <div class="split">
+        <div class="phone"><div class="screen" id="mfaScreen">
+          <div class="notch"></div>
+          <div class="mfa-result" id="mfaStart">
+            <p style="color:#333">Your phone is quiet. For now.</p>
+            <button class="btn" style="background:#1D4ED8;color:#fff" id="mfaGo">Start the demo</button>
+          </div>
+        </div></div>
+        <div class="prose">
+          <h3>MFA fatigue: they already have your password.</h3>
+          <p>Multi-factor authentication stops most stolen-password logins. So attackers spam approval requests, sometimes at 2 a.m., until someone taps Approve just to make it stop.</p>
+          <p class="soft">Iowa State’s own guidance: never share your MFA code with anyone, even someone claiming to be from ISU. <a class="cite" href="#src-isu24">ISU ITS</a></p>
+          <p class="soft" id="mfaMsg" aria-live="polite"></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabpanel" id="p-vm" role="tabpanel" aria-labelledby="t-vm" hidden>
+      <div class="split">
+        <div class="vm">
+          <div class="vm-top"><span class="vm-ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24"><path fill="#E9EEF6" d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1Z"/></svg></span><span><b>Unknown caller</b><br><span class="soft" style="font-size:.9rem">Voicemail · 0:24</span></span></div>
+          <div class="wave" id="wave" aria-hidden="true"></div>
+          <button class="btn btn-lure" id="vmPlay">Play voicemail</button>
+          <p class="soft" style="font-size:.85rem; margin:.8rem 0 0" id="vmNote">Read aloud by your browser’s built-in voice. Full transcript below.</p>
+        </div>
+        <div class="prose">
+          <h3>Vishing: phishing by voice.</h3>
+          <p class="transcript" id="vmText">“Hi, this is Mark from the Cardinal Plains IT Security Office. We detected a login to your student account from overseas and we’ve locked it for your protection. To unlock it, I’ll text you a six-digit code. Just read it back to me when I call in five minutes. Thanks.”</p>
+          <div class="callout"><p style="margin:0"><b>The tell:</b> that “code” is the one-time login code for your account. Mark is signing in as you right now. No real IT office will ever ask you to read a code back.</p></div>
+          <p class="soft" style="margin-top:1rem">Voice scams are surging, and AI now clones voices from seconds of audio. The FBI received nearly 61,000 complaints about criminals impersonating law enforcement and government officials between January 2025 and July 2026, with losses over $1.6 billion. <a class="cite" href="#src-fbi-gov">FBI IC3</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 7. S.L.O.W. ================= -->
+<section id="slow" class="block light" aria-labelledby="slowTitle">
+  <div class="wrap">
+    <p class="kicker">The fix takes ten seconds</p>
+    <h2 id="slowTitle">When a message pushes you to hurry, go</h2>
+    <p class="slow-word" aria-label="SLOW"><span>S</span><span>L</span><span>O</span><span>W</span></p>
+    <p class="stakes-lede" style="max-width:40ch">Every phish in this page relied on speed. Taking it away is the whole defense. Check off each step to commit to it.</p>
+
+    <ol class="steps">
+      <li class="step"><span class="ltr" aria-hidden="true">S</span><div><h3>Stop.</h3><p>Urgency is the attack. A deadline, a threat, or a too-good offer is your cue to pause, not to act.</p><label><input type="checkbox" data-step="0"> I’ll stop when it feels urgent</label></div></li>
+      <li class="step"><span class="ltr" aria-hidden="true">L</span><div><h3>Look.</h3><p>Check the sender’s full address, not just the name. Hover over links, or press and hold on mobile, to see where they really go.</p><label><input type="checkbox" data-step="1"> I’ll look before I click</label></div></li>
+      <li class="step"><span class="ltr" aria-hidden="true">O</span><div><h3>Open it yourself.</h3><p>Don’t use the link. Type the real address or open the official app. If it’s real, it will be there.</p><label><input type="checkbox" data-step="2"> I’ll go to the source myself</label></div></li>
+      <li class="step"><span class="ltr" aria-hidden="true">W</span><div><h3>Warn.</h3><p>Report it. One report lets your IT team pull the email from everyone else’s inbox.</p><label><input type="checkbox" data-step="3"> I’ll report what I find</label></div></li>
+    </ol>
+
+    <div class="report">
+      <div>
+        <h3>How to report phishing at Iowa State</h3>
+        <ol>
+          <li>In Outlook, select the message.</li>
+          <li>Choose <b>Report</b> (web) or <b>Report Message</b> (desktop).</li>
+          <li>Pick <b>Report Phishing</b>.</li>
+        </ol>
+        <p class="soft" style="font-size:.95rem; margin-top:.8rem">ITS prefers this method because it receives a full copy of the message. <a class="cite" href="#src-isu-report">ISU ITS</a></p>
+      </div>
+      <div>
+        <h3>If you already clicked</h3>
+        <p class="soft" style="margin-bottom:.5rem">Don’t be embarrassed. Be fast.</p>
+        <ol>
+          <li>Change your password from the real site.</li>
+          <li>Contact the ISU IT Solution Center right away.</li>
+          <li>Deny any approval prompts you didn’t start.</li>
+          <li>Check your inbox rules and your direct deposit info.</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="badge-zone">
+      <canvas id="badge" width="600" height="600" role="img" aria-label="Your Human Firewall badge"></canvas>
+      <div class="prose">
+        <h3 id="badgeTitle">Check all four steps to earn your badge.</h3>
+        <p class="soft" id="badgeSub">It includes your Spot the Phish score. Share it, and send a friend this page so they get hooked here instead of for real.</p>
+        <p style="display:flex; gap:.75rem; flex-wrap:wrap"><a class="btn btn-lure" id="dlBadge" href="#" download="human-firewall-badge.png" aria-disabled="true">Download badge</a><button class="btn btn-ghost" id="copyLink">Copy page link</button></p>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<!-- ================= 8. SOURCES ================= -->
+<section id="sources" aria-labelledby="srcTitle">
+  <div class="wrap">
+    <h2 id="srcTitle">Works cited</h2>
+    <ul class="works">
+      <li id="src-ic3">Federal Bureau of Investigation, Internet Crime Complaint Center. <i>2025 Internet Crime Report</i>. FBI, Apr. 2026, <a href="https://www.ic3.gov">www.ic3.gov</a>.</li>
+      <li id="src-fbi-gov">Federal Bureau of Investigation, Internet Crime Complaint Center. “Scammers Impersonating Law Enforcement and Government Officials in Fraud Schemes.” <i>Public Service Announcement</i>, 17 Sept. 2026, <a href="https://www.ic3.gov/PSA/2026/PSA260917">www.ic3.gov/PSA/2026/PSA260917</a>.</li>
+      <li id="src-fbi-jobs">Federal Bureau of Investigation, Internet Crime Complaint Center. “FBI Warns of Fictitious ‘Work-from-Home’ Scam Targeting University Students.” <i>Public Service Announcement</i>, 13 Jan. 2015.</li>
+      <li id="src-isu24">Iowa State University Information Technology Services. “October 2024 Phishing Attack FAQ.” <i>Iowa State University</i>, <a href="https://it.iastate.edu/october-2024-phishing-attack-faq">it.iastate.edu/october-2024-phishing-attack-faq</a>.</li>
+      <li id="src-isu-report">Iowa State University Information Technology Services. “Did You Get a Suspicious Email or Text?” <i>Iowa State University</i>, <a href="https://it.iastate.edu/email-scams">it.iastate.edu/email-scams</a>.</li>
+      <li id="src-isu23">“Recent Scam Shows Dangers That Come with Email Phishing.” <i>Inside Iowa State</i>, 6 July 2023, <a href="https://inside.iastate.edu/article/2023/07/06/phishingscam">inside.iastate.edu/article/2023/07/06/phishingscam</a>.</li>
+      <li id="src-isd">“‘Your Account Is at Risk,’ Email Phishing Scam Targets Iowa State.” <i>Iowa State Daily</i>, <a href="https://iowastatedaily.com/278489/news/your-account-is-at-risk-email-phishing-scam-targets-iowa-state">iowastatedaily.com/278489/news/your-account-is-at-risk-email-phishing-scam-targets-iowa-state</a>.</li>
+      <li id="src-dbir">Verizon Business. <i>2025 Data Breach Investigations Report</i>. Verizon, 2025, <a href="https://www.verizon.com/business/resources/reports/dbir/">www.verizon.com/business/resources/reports/dbir/</a>.</li>
+    </ul>
+    <p class="disclose">All schools, people, companies, and web addresses in the simulations (Cardinal Plains University, ParcelPost, and others) are fictional. The simulated login fields are not real inputs: this site does not collect, store, or transmit anything you click or type. Typefaces: Atkinson Hyperlegible by the Braille Institute, chosen for readability; Bricolage Grotesque; JetBrains Mono. Built by Aden for ENGL 250.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">Hooked · An interactive phishing awareness project · <a href="#hook" style="color:var(--bone)">Back to the top</a></div>
+</footer>
+<script>
+(function(){
+"use strict";
+var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+var $ = function(s,r){return (r||document).querySelector(s);};
+var $$ = function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));};
+
+/* ---------- sound ---------- */
+var soundOn=false, actx=null;
+var soundBtn=$("#soundBtn");
+soundBtn.addEventListener("click",function(){
+  soundOn=!soundOn;
+  soundBtn.setAttribute("aria-pressed",String(soundOn));
+  soundBtn.textContent = soundOn?"Sound on":"Sound off";
+  if(soundOn&&!actx){try{actx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}}
+});
+function ping(freq,dur){
+  if(!soundOn||!actx) return;
+  try{
+    var o=actx.createOscillator(),g=actx.createGain();
+    o.frequency.value=freq||660; o.type="sine";
+    o.connect(g); g.connect(actx.destination);
+    g.gain.setValueAtTime(.001,actx.currentTime);
+    g.gain.exponentialRampToValueAtTime(.25,actx.currentTime+.01);
+    g.gain.exponentialRampToValueAtTime(.001,actx.currentTime+(dur||.18));
+    o.start(); o.stop(actx.currentTime+(dur||.18));
+  }catch(e){}
+}
+
+/* ---------- 1. HOOK FLOW (Outlook) ---------- */
+var toast=$("#toast"), status1=$("#status1"), client=$("#client"),
+    reader=$("#reader"), readTools=$("#readTools"), emptyRead=$("#emptyRead"),
+    loginOverlay=$("#loginOverlay");
+
+setTimeout(function(){ toast.classList.add("show"); ping(880,.12); },1500);
+
+var EMAILS={
+  canvas:{tools:false, html:'<h3>ENGL 250: Unit 3 feedback posted</h3>'+
+    '<div class="meta"><span class="avatar" style="background:#E8453C">C</span><span><b>Canvas</b><br><span class="addr">notifications@instructure.com</span></span></div>'+
+    '<p>Hi Jordan,</p><p>Your instructor posted feedback on your Unit 3 draft. Log in to Canvas the usual way to read the comments.</p><p>— Canvas</p>'},
+  rec:{tools:false, html:'<h3>Intramural sign-ups close Friday</h3>'+
+    '<div class="meta"><span class="avatar" style="background:#2E7D32">R</span><span><b>Rec Services</b><br><span class="addr">recservices@iastate.edu</span></span></div>'+
+    '<p>Rosters for intramural basketball are due Friday at 5 p.m. Sign up on the Rec Services portal.</p>'},
+  phish:{tools:true, html:'<h3>Action required: Fall disbursement on hold</h3>'+
+    '<div class="meta"><span class="avatar" style="background:#8A1C2B">FA</span><span><b>CPU Financial Aid Office</b><br><span class="addr">finaid@cardinalplains-edu.com</span></span></div>'+
+    '<p>Hi Student,</p>'+
+    '<p>Your Fall 2026 financial aid disbursement has been placed on hold due to an incomplete identity verification.</p>'+
+    '<p>To avoid cancellation of your refund, please verify your NetID <strong>within 24 hours</strong>.</p>'+
+    '<button class="cta-btn" id="verifyBtn" data-href="https://cardinalplains-edu.com/netid/verify?session=8f3a1c">Verify my account</button>'+
+    '<p>Thank you,<br>Office of Student Financial Aid<br>Cardinal Plains University</p>'}
+};
+
+function openMessage(key){
+  var m=EMAILS[key]; if(!m) return;
+  toast.classList.remove("show");
+  if(emptyRead) emptyRead.style.display="none";
+  readTools.hidden=!m.tools;
+  reader.innerHTML=m.html;
+  reader.scrollTop=0;
+  // mark selected in list
+  $$("#inboxList .row").forEach(function(r){ r.classList.toggle("sel", r.dataset.open===key); });
+  var pr=$("#phishRow"); if(key==="phish"&&pr) pr.classList.remove("unread");
+  if(key==="phish"){ wireVerify(); typeStatus(); }
+  else { status1.innerHTML="&nbsp;"; }
+}
+
+$$("#inboxList .row").forEach(function(r){
+  r.addEventListener("click",function(){ openMessage(r.dataset.open); });
+});
+toast.addEventListener("click",function(){ openMessage("phish"); });
+
+var statusMsgs=["Loading remote content from cardinalplains-edu.com…","Connecting to 185.220.xxx.xxx…","This sender is not in your Contacts."];
+function typeStatus(){
+  var i=0;
+  (function next(){
+    if(i<statusMsgs.length){ status1.textContent=statusMsgs[i++]; setTimeout(next,1100);}
+  })();
+}
+
+function wireVerify(){
+  var verifyBtn=$("#verifyBtn"); if(!verifyBtn) return;
+  ["mouseenter","focus"].forEach(function(ev){
+    verifyBtn.addEventListener(ev,function(){ status1.textContent="Link destination: "+verifyBtn.dataset.href; });
+  });
+  ["mouseleave","blur"].forEach(function(ev){
+    verifyBtn.addEventListener(ev,function(){ status1.innerHTML="&nbsp;"; });
+  });
+  verifyBtn.addEventListener("click",function(){
+    loginOverlay.classList.add("show");
+    loginOverlay.setAttribute("aria-hidden","false");
+    setTimeout(function(){ var f=$(".fake-field",loginOverlay); if(f) f.focus(); }, reduce?0:450);
+  });
+}
+
+// optional: Report button in the reading pane also "defuses" (teaches the right move)
+$("#reportBtn").addEventListener("click",function(){
+  status1.textContent="Reported to IT Security. This is exactly the right move.";
+  ping(720,.14);
+});
+
+// any trap element triggers the glitch + reveal
+var sprung=false;
+function spring(){
+  if(sprung) return; sprung=true;
+  ping(140,.4);
+  if(reduce){ gotoReveal(); return; }
+  client.classList.add("glitch");
+  setTimeout(gotoReveal,850);
+}
+function gotoReveal(){
+  var r=$("#reveal"); r.classList.add("on");
+  r.scrollIntoView({behavior:reduce?"auto":"smooth"});
+  setTimeout(function(){r.focus();},reduce?0:600);
+}
+$$("[data-trap]").forEach(function(el){
+  el.addEventListener("click",spring);
+  el.addEventListener("keydown",function(e){ if(e.key==="Enter"||e.key===" "){e.preventDefault();spring();}});
+});
+
+$("#skipSim").addEventListener("click",function(e){
+  e.preventDefault();
+  $("#reveal").classList.add("on");
+  $("#stakes").scrollIntoView({behavior:"smooth"});
+});
+
+/* ---------- reveal flag toggles (click to re-reveal individually) ---------- */
+$$("#reveal .annotated mark.flag").forEach(function(m){
+  m.setAttribute("tabindex","0");
+});
+
+/* ---------- 2. CHART + bars reveal on scroll ---------- */
+function onIn(el,cb,opts){
+  if(!("IntersectionObserver" in window)){ cb(); return; }
+  var io=new IntersectionObserver(function(es){
+    es.forEach(function(e){ if(e.isIntersecting){ cb(); io.disconnect(); }});
+  },opts||{threshold:.3});
+  io.observe(el);
+}
+onIn($("#crimeChart"),function(){ $("#crimeChart").classList.add("in"); });
+
+/* ---------- 3. TIMELINE reveal ---------- */
+$$("#log li").forEach(function(li,i){
+  onIn(li,function(){
+    setTimeout(function(){ li.classList.add("in"); if(li.classList.contains("hot")) ping(520,.1); }, reduce?0:i*90);
+  },{threshold:.6});
+});
+
+/* ---------- 3a. GLOBE ---------- */
+(function(){
+  var canvas=$("#globe"); if(!canvas||!canvas.getContext) return;
+  var ctx=canvas.getContext("2d");
+  var DPR=Math.min(2, window.devicePixelRatio||1);
+  var SIZE=460;
+  canvas.width=SIZE*DPR; canvas.height=SIZE*DPR; ctx.scale(DPR,DPR);
+  var R=SIZE*0.42, cx=SIZE/2, cy=SIZE/2;
+  var lon0=-28*Math.PI/180, lat0=28*Math.PI/180; // view center
+  var D=Math.PI/180;
+  var nodes=[
+    {la:42.0,lo:-93.6,name:"Ames"},
+    {la:52.4,lo:4.9,name:"Amsterdam"},
+    {la:6.5,lo:3.4,name:"Lagos"},
+    {la:55.8,lo:37.6,name:"Moscow"},
+    {la:35.0,lo:51.4,name:"—"}
+  ];
+  function proj(la,lo){
+    la*=D; lo*=D;
+    var dl=lo-lon0;
+    var x=Math.cos(la)*Math.sin(dl);
+    var y=Math.cos(lat0)*Math.sin(la)-Math.sin(lat0)*Math.cos(la)*Math.cos(dl);
+    var z=Math.sin(lat0)*Math.sin(la)+Math.cos(lat0)*Math.cos(la)*Math.cos(dl);
+    return {x:cx+R*x, y:cy-R*y, z:z};
+  }
+  function slerp(a,b,t){
+    // interpolate along great circle between two lat/lon (deg)
+    var la1=a.la*D,lo1=a.lo*D,la2=b.la*D,lo2=b.lo*D;
+    var d=2*Math.asin(Math.sqrt(Math.pow(Math.sin((la1-la2)/2),2)+Math.cos(la1)*Math.cos(la2)*Math.pow(Math.sin((lo1-lo2)/2),2)));
+    if(d===0) return {la:a.la,lo:a.lo};
+    var A=Math.sin((1-t)*d)/Math.sin(d), B=Math.sin(t*d)/Math.sin(d);
+    var x=A*Math.cos(la1)*Math.cos(lo1)+B*Math.cos(la2)*Math.cos(lo2);
+    var y=A*Math.cos(la1)*Math.sin(lo1)+B*Math.cos(la2)*Math.sin(lo2);
+    var z=A*Math.sin(la1)+B*Math.sin(la2);
+    return {la:Math.atan2(z,Math.sqrt(x*x+y*y))/D, lo:Math.atan2(y,x)/D};
+  }
+  function drawGlobe(){
+    ctx.clearRect(0,0,SIZE,SIZE);
+    // sphere
+    var g=ctx.createRadialGradient(cx-R*0.3,cy-R*0.3,R*0.2,cx,cy,R);
+    g.addColorStop(0,"#16294a"); g.addColorStop(1,"#0a1526");
+    ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2); ctx.fillStyle=g; ctx.fill();
+    ctx.strokeStyle="rgba(174,187,208,.25)"; ctx.lineWidth=1; ctx.stroke();
+    // graticule
+    ctx.strokeStyle="rgba(174,187,208,.14)"; ctx.lineWidth=1;
+    for(var la=-60;la<=60;la+=30){
+      ctx.beginPath(); var started=false;
+      for(var lo=-180;lo<=180;lo+=4){ var p=proj(la,lo); if(p.z>0){ if(!started){ctx.moveTo(p.x,p.y);started=true;} else ctx.lineTo(p.x,p.y);} else started=false; }
+      ctx.stroke();
+    }
+    for(var lo2=-180;lo2<180;lo2+=30){
+      ctx.beginPath(); var st=false;
+      for(var la2=-90;la2<=90;la2+=4){ var q=proj(la2,lo2); if(q.z>0){ if(!st){ctx.moveTo(q.x,q.y);st=true;} else ctx.lineTo(q.x,q.y);} else st=false; }
+      ctx.stroke();
+    }
+  }
+  function drawArc(a,b,prog,active){
+    ctx.lineWidth=active?2.5:1.5;
+    ctx.strokeStyle=active?"rgba(255,138,61,.9)":"rgba(255,138,61,.35)";
+    ctx.beginPath(); var started=false;
+    var steps=48;
+    for(var i=0;i<=steps*prog;i++){
+      var pt=slerp(a,b,i/steps); var p=proj(pt.la,pt.lo);
+      if(p.z>0){ if(!started){ctx.moveTo(p.x,p.y);started=true;} else ctx.lineTo(p.x,p.y);} else started=false;
+    }
+    ctx.stroke();
+  }
+  function drawNode(n,lit){
+    var p=proj(n.la,n.lo); if(p.z<=0) return;
+    ctx.beginPath(); ctx.arc(p.x,p.y, lit?6:4, 0,Math.PI*2);
+    ctx.fillStyle=lit?"#FF8A3D":"#AEBBD0"; ctx.fill();
+    if(lit){ ctx.beginPath(); ctx.arc(p.x,p.y,11,0,Math.PI*2); ctx.strokeStyle="rgba(255,138,61,.5)"; ctx.lineWidth=2; ctx.stroke(); }
+  }
+  var hopItems=$$("#hopList li"), cap=$("#globeCap");
+  var CAPS=["origin: your keystrokes","relayed through Amsterdam","bounced via Lagos","collected in Moscow","sold. origin erased."];
+  var seg=0, t=0, running=false, done=false;
+  function frame(){
+    if(!running) return;
+    drawGlobe();
+    for(var i=0;i<nodes.length-1;i++){
+      var active=(i===seg);
+      drawArc(nodes[i],nodes[i+1], i<seg?1:(i===seg?t:0), active);
+    }
+    for(var j=0;j<nodes.length;j++) drawNode(nodes[j], j<=seg);
+    t+=reduce?1:0.018;
+    if(t>=1){
+      t=0; seg++;
+      if(seg<hopItems.length){ hopItems[seg].classList.add("on"); if(cap)cap.textContent=CAPS[seg]||""; ping(560,.08); }
+      if(seg>=nodes.length-1){
+        seg=nodes.length-2; t=1; running=false; done=true;
+        drawGlobe();
+        for(var k=0;k<nodes.length-1;k++) drawArc(nodes[k],nodes[k+1],1,false);
+        for(var m=0;m<nodes.length;m++) drawNode(nodes[m],true);
+        if(cap) cap.textContent="your login is now everywhere and nowhere";
+        return;
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+  function start(){
+    if(done) return;
+    hopItems[0].classList.add("on"); if(cap)cap.textContent=CAPS[0];
+    if(reduce){
+      drawGlobe();
+      for(var k=0;k<nodes.length-1;k++) drawArc(nodes[k],nodes[k+1],1,false);
+      for(var m=0;m<nodes.length;m++) drawNode(nodes[m],true);
+      hopItems.forEach(function(li){li.classList.add("on");});
+      if(cap) cap.textContent="credentials relayed worldwide in seconds";
+      done=true; return;
+    }
+    running=true; requestAnimationFrame(frame);
+  }
+  drawGlobe(); drawNode(nodes[0],false);
+  onIn(canvas,start,{threshold:.4});
+})();
+
+/* ---------- 3b. SPREAD DIAGRAM ---------- */
+(function(){
+  var svg=$("#spreadSvg"); if(!svg) return;
+  var NS="http://www.w3.org/2000/svg";
+  var edgesG=$("#spreadEdges"), nodesG=$("#spreadNodes");
+  // waves: x positions, counts
+  var waves=[{n:1,x:70,r:11,c:"#F2555A"},{n:5,x:300,r:7,c:"#FF8A3D"},{n:11,x:560,r:5,c:"#FFB37A"},{n:18,x:830,r:3.5,c:"#AEBBD0"}];
+  var H=360, positions=[];
+  waves.forEach(function(w,wi){
+    var arr=[];
+    for(var i=0;i<w.n;i++){
+      var y = w.n===1? H/2 : (H*0.12 + (H*0.76)*(i/(w.n-1)));
+      var node=document.createElementNS(NS,"circle");
+      node.setAttribute("cx",w.x); node.setAttribute("cy",y.toFixed(1));
+      node.setAttribute("r",w.r); node.setAttribute("fill",w.c);
+      node.setAttribute("class","spread-node"); node.dataset.wave=wi;
+      nodesG.appendChild(node); arr.push({x:w.x,y:y,el:node});
+    }
+    positions.push(arr);
+  });
+  // edges: connect a few from each wave to next
+  var edges=[];
+  for(var wi=0;wi<positions.length-1;wi++){
+    var from=positions[wi], to=positions[wi+1];
+    to.forEach(function(t,ti){
+      var f=from[ti % from.length];
+      var e=document.createElementNS(NS,"path");
+      var mx=(f.x+t.x)/2;
+      e.setAttribute("d","M"+f.x+","+f.y+" C"+mx+","+f.y+" "+mx+","+t.y+" "+t.x+","+t.y);
+      e.setAttribute("fill","none"); e.setAttribute("class","spread-edge"); e.dataset.wave=wi+1;
+      edgesG.appendChild(e); edges.push(e);
+    });
+  }
+  var countEl=$("#spreadCount"), count2El=$("#spreadCount2");
+  function revealWave(wi){
+    $$('[data-wave="'+wi+'"]',svg).forEach(function(el,i){
+      setTimeout(function(){ el.classList.add("on"); }, reduce?0:i*45);
+    });
+    if(wi===1 && count2El){ animateNum(count2El,0,waves[1].n*40,900); } // "first wave" list size, illustrative
+  }
+  function animateNum(el,from,to,dur){
+    if(reduce){ el.textContent=to.toLocaleString(); return; }
+    var t0=performance.now();
+    (function step(now){
+      var p=Math.min(1,(now-t0)/dur);
+      el.textContent=Math.round(from+(to-from)*(p*(2-p))).toLocaleString();
+      if(p<1) requestAnimationFrame(step);
+    })(t0);
+  }
+  var started=false;
+  onIn(svg,function(){
+    if(started) return; started=true;
+    waves.forEach(function(w,wi){ setTimeout(function(){ revealWave(wi); ping(480-wi*40,.08); }, reduce?0:wi*700); });
+  },{threshold:.3});
+})();
+
+/* ---------- 4. LEVERS ---------- */
+var levers=[
+  {t:"Urgency",ex:"“Action required within 24 hours or your account will be closed.”",b:"A deadline removes the time you’d spend checking. Real institutions give you reasonable notice and a way to confirm."},
+  {t:"Authority",ex:"“This is the IT Help Desk / your dean / the IRS.”",b:"We’re trained to comply with authority. Attackers borrow a badge they don’t have. Verify through a channel you choose, not the one they gave you."},
+  {t:"Fear",ex:"“Suspicious login detected. Your data may be compromised.”",b:"Fear narrows your focus to the threat they named, so you miss the one that’s actually in front of you: the message itself."},
+  {t:"Reward",ex:"“You’ve been selected for a $450/week remote role. Start today.”",b:"Too-good offers switch off scrutiny with excitement. If you didn’t apply, you weren’t selected. This is the lever aimed straight at students."}
+];
+var leverPanel=$("#leverPanel");
+function showLever(i){
+  var l=levers[i];
+  leverPanel.innerHTML='<div class="ex">'+l.ex+'</div><p style="margin:0">'+l.b+'</p>';
+  $$(".lever").forEach(function(b,bi){ b.setAttribute("aria-selected",String(bi===i)); });
+}
+$$(".lever").forEach(function(b,i){
+  b.addEventListener("click",function(){showLever(i);});
+  b.addEventListener("keydown",function(e){
+    if(e.key==="ArrowRight"||e.key==="ArrowLeft"){
+      e.preventDefault();
+      var n=(i+(e.key==="ArrowRight"?1:-1)+levers.length)%levers.length;
+      $$(".lever")[n].focus(); showLever(n);
+    }
+  });
+});
+showLever(0);
+
+/* ---------- 4b. COMPARE slider ---------- */
+var stage=$("#cmpStage"), range=$("#cmpRange");
+function setPos(v){ v=Math.max(0,Math.min(100,v)); stage.style.setProperty("--pos",v+"%"); range.value=v; }
+range.addEventListener("input",function(){ setPos(+range.value); });
+function dragFromEvent(e){
+  var r=stage.getBoundingClientRect();
+  var x=(e.touches?e.touches[0].clientX:e.clientX)-r.left;
+  setPos(x/r.width*100);
+}
+var dragging=false;
+stage.addEventListener("pointerdown",function(e){dragging=true;dragFromEvent(e);});
+window.addEventListener("pointermove",function(e){if(dragging)dragFromEvent(e);});
+window.addEventListener("pointerup",function(){dragging=false;});
+
+/* ---------- 5. GAME ---------- */
+var MESSAGES=[
+  {phish:true,from:"CPU Financial Aid",addr:"finaid@cardinalplains-edu.com",subj:"Action required: disbursement on hold",body:"Verify your NetID within 24 hours or your refund will be cancelled.",link:{text:"Verify now",href:"cardinalplains-edu.com/verify"},flags:["The domain is cardinalplains-edu.com, not cardinalplains.edu.","A 24-hour threat about money is classic pressure.","Schools don’t ask you to “verify your NetID” through a link."]},
+  {phish:false,from:"Canvas",addr:"notifications@instructure.com",subj:"New grade posted in ENGL 250",body:"Your instructor posted a grade. Log in to Canvas to view it.",link:{text:"Open Canvas",href:"canvas.iastate.edu"},flags:["instructure.com is Canvas’s real company domain.","No threat, no urgency, no request for credentials.","The link points to the real canvas.iastate.edu."]},
+  {phish:true,from:"IT Help Desk",addr:"support@iastate-helpdesk.net",subj:"Mailbox full: upgrade required",body:"Your mailbox is 99% full. Validate your account to receive new mail.",link:{text:"Validate account",href:"iastate-helpdesk.net/owa"},flags:["iastate-helpdesk.net is not an iastate.edu address.","“Validate your account” is a credential grab.","ISU IT never threatens to cut off your mail like this."]},
+  {phish:true,from:"Dr. Reynolds",addr:"prof.reynolds.engl@gmail.com",subj:"Quick task for you",body:"I’m going into meetings. Are you available for a quick paid research task? Reply and I’ll send details.",link:null,flags:["A professor using a personal Gmail, not their iastate.edu address.","Vague “quick paid task” is the opening move of a job scam.","Urgency plus secrecy (“I’m in meetings”) discourages checking."]},
+  {phish:false,from:"Iowa State Rec Services",addr:"recservices@iastate.edu",subj:"Intramural basketball sign-ups close Friday",body:"Rosters are due Friday at 5 p.m. Sign up on the Rec Services portal.",link:{text:"Rec portal",href:"recservices.iastate.edu"},flags:["Sent from a genuine iastate.edu address.","A real deadline, but no threat and nothing to log into off-campus.","The link stays on iastate.edu."]},
+  {phish:true,from:"PayFriend",addr:"service@payfriend-secure.com",subj:"You sent $820.00",body:"If you did not authorize this payment, cancel immediately using the link below.",link:{text:"Cancel payment",href:"payfriend-secure.com/cancel"},flags:["A fake charge triggers panic so you click without thinking.","payfriend-secure.com is a lookalike, not the real service.","“Cancel” links on alarming charges almost always steal logins."]},
+  {phish:false,from:"Microsoft",addr:"account-security-noreply@accountprotection.microsoft.com",subj:"New sign-in to your account",body:"We noticed a new sign-in from Ames, Iowa. If this was you, no action is needed.",link:null,flags:["Sent from Microsoft’s real accountprotection.microsoft.com domain.","“If this was you, no action needed” — no pressure to click.","It names a location you can verify and asks nothing of you."]},
+  {phish:true,from:"CPU Registrar",addr:"registrar@cardinalplalns.edu",subj:"Enrollment verification needed",body:"Confirm your enrollment to avoid being dropped from classes.",link:{text:"Confirm enrollment",href:"cardinalplalns.edu/confirm"},flags:["Look closely: cardinalpl-a-l-ns.edu. The “i” is an “l”.","A threat to drop your classes creates panic.","Typosquatting a trusted domain is a top phishing trick."]}
+];
+var gi=0, gscore=0, answered=false;
+var pips=$("#pips");
+MESSAGES.forEach(function(){ var s=document.createElement("span"); s.className="pip"; pips.appendChild(s); });
+function qr(){ // decorative pseudo-QR
+  var out="";
+  for(var i=0;i<121;i++){ out+= (Math.random()>.5?'<i></i>':'<i class="w"></i>'); }
+  return '<div class="qr" aria-hidden="true">'+out+'</div>';
+}
+function renderMail(){
+  var m=MESSAGES[gi];
+  $("#gIdx").textContent=gi+1;
+  $$(".pip").forEach(function(p,i){ p.className="pip"+(i===gi?" cur":""); });
+  var linkHtml = m.link? '<p><button class="mlink" id="gmLink" data-href="'+m.link.href+'">'+m.link.text+'</button></p>' : (m.hasQr?qr():'');
+  $("#gMail").innerHTML =
+    '<div class="mail-body">'+
+      '<h3>'+m.subj+'</h3>'+
+      '<div class="meta"><span class="avatar">'+m.from.charAt(0)+'</span><span><b>'+m.from+'</b><br><span class="addr">'+m.addr+'</span></span></div>'+
+      '<p>'+m.body+'</p>'+ linkHtml +
+    '</div>'+
+    '<div class="statusbar" id="gmStatus" aria-live="polite">&nbsp;</div>';
+  var gl=$("#gmLink");
+  if(gl){
+    ["mouseenter","focus"].forEach(function(ev){ gl.addEventListener(ev,function(){ $("#gmStatus").textContent="Link goes to: "+gl.dataset.href; }); });
+    ["mouseleave","blur"].forEach(function(ev){ gl.addEventListener(ev,function(){ $("#gmStatus").innerHTML="&nbsp;"; }); });
+  }
+  $("#bPhish").disabled=false; $("#bLegit").disabled=false;
+  $("#verdict").classList.remove("on");
+  answered=false;
+}
+function answer(said){
+  if(answered) return; answered=true;
+  var m=MESSAGES[gi], correct=(said===m.phish);
+  if(correct){ gscore++; $("#gScore").textContent=gscore; ping(720,.12);} else { ping(200,.25); }
+  $$(".pip")[gi].classList.add(correct?"ok":"bad");
+  $("#bPhish").disabled=true; $("#bLegit").disabled=true;
+  var v=$("#verdict");
+  v.innerHTML='<h3 class="'+(correct?"ok":"bad")+'">'+(correct?"Correct.":"Gotcha.")+'</h3>'+
+    '<p>'+(m.phish?"This one is a <b>phish</b>.":"This one is <b>legit</b>.")+(correct?"":" Here’s what to look for:")+'</p>'+
+    '<ol>'+m.flags.map(function(f){return "<li>"+f+"</li>";}).join("")+'</ol>'+
+    '<button class="btn btn-lure" id="gNext">'+(gi<MESSAGES.length-1?"Next message":"See my rank")+'</button>';
+  v.classList.add("on");
+  $("#gNext").addEventListener("click",nextMsg);
+  $("#gNext").focus();
+}
+function nextMsg(){
+  if(gi<MESSAGES.length-1){ gi++; renderMail(); $("#gMail").scrollIntoView({behavior:reduce?"auto":"smooth",block:"center"}); }
+  else finishGame();
+}
+$("#bPhish").addEventListener("click",function(){answer(true);});
+$("#bLegit").addEventListener("click",function(){answer(false);});
+
+var RANKS=[
+  {min:0,name:"Phish Food",line:"Everyone starts here. The good news: every trick you just missed is now one you’ll recognize."},
+  {min:4,name:"Getting Wary",line:"You’re catching the obvious ones. The subtle domain tricks are where to sharpen next."},
+  {min:6,name:"Sharp Eye",line:"Strong instincts. You’d survive most real inboxes without taking the bait."},
+  {min:8,name:"Human Firewall",line:"Flawless. You read the sender, the links, and the pressure like a pro. Now teach a friend."}
+];
+window.__finalScore=0;
+function finishGame(){
+  window.__finalScore=gscore;
+  var r=RANKS[0];
+  RANKS.forEach(function(x){ if(gscore>=x.min) r=x; });
+  $("#rankName").textContent=r.name;
+  $("#rankLine").textContent="You caught "+gscore+" of "+MESSAGES.length+". "+r.line;
+  $("#gamePlay").style.display="none";
+  $("#final").classList.add("on");
+  $("#final").scrollIntoView({behavior:reduce?"auto":"smooth",block:"center"});
+  drawBadge();
+}
+$("#replay").addEventListener("click",function(){
+  gi=0;gscore=0;$("#gScore").textContent="0";
+  $$(".pip").forEach(function(p){p.className="pip";});
+  $("#final").classList.remove("on"); $("#gamePlay").style.display="";
+  renderMail(); $("#game").scrollIntoView({behavior:"smooth"});
+});
+renderMail();
+
+/* ---------- 6. BEYOND TABS ---------- */
+var tabs=$$(".tab");
+function selectTab(tab){
+  tabs.forEach(function(t){
+    var sel=t===tab;
+    t.setAttribute("aria-selected",String(sel));
+    t.tabIndex=sel?0:-1;
+    $("#"+t.getAttribute("aria-controls")).hidden=!sel;
+  });
+}
+tabs.forEach(function(t,i){
+  t.addEventListener("click",function(){selectTab(t);});
+  t.addEventListener("keydown",function(e){
+    if(e.key==="ArrowRight"||e.key==="ArrowLeft"){
+      e.preventDefault();
+      var n=(i+(e.key==="ArrowRight"?1:-1)+tabs.length)%tabs.length;
+      tabs[n].focus(); selectTab(tabs[n]);
+    }
+  });
+});
+
+// smishing link
+$("#smsLink").addEventListener("click",function(){
+  $("#smsResult").innerHTML="That link is <b>parcelpost-redelivery.info</b> — not any real carrier. Carriers don’t charge you over text to “release” a package, and they don’t use .info redelivery sites. Delete it.";
+  ping(200,.2);
+});
+
+// MFA fatigue: denying does NOT stop it — the attacker keeps spamming.
+// You win only by holding the line across the whole barrage. One Approve loses.
+var mfaTimer=null, mfaCount=0, mfaDenies=0, NEED_DENIES=5;
+var LOCS=["Lagos, NG","Moscow, RU","Hanoi, VN","São Paulo, BR","Jakarta, ID","Kyiv, UA","Lagos, NG"];
+$("#mfaGo").addEventListener("click",startMfa);
+function startMfa(){
+  mfaCount=0; mfaDenies=0;
+  nextCard();
+}
+function nextCard(){
+  var scr=$("#mfaScreen");
+  mfaCount++;
+  var loc=LOCS[(mfaCount-1)%LOCS.length];
+  var at=(new Date()); // show a late-night time to sell the fatigue angle
+  scr.innerHTML='<div class="notch"></div>'+
+    '<div class="mfa-count">Denied so far: '+mfaDenies+'. They keep trying…</div>'+
+    '<div class="mfa-card'+(mfaCount>1?" shake":"")+'">'+
+      '<div style="font-size:1.6rem">🔐</div>'+
+      '<h4>Approve sign-in?</h4>'+
+      '<p>Someone is trying to sign in to your student account from <b>'+loc+'</b> · 2:4'+(mfaCount%10)+' AM</p>'+
+      '<div class="mfa-actions"><button class="mfa-deny" id="mfaDeny">Deny</button><button class="mfa-approve" id="mfaApprove">Approve</button></div>'+
+    '</div>';
+  ping(880,.1);
+  $("#mfaApprove").addEventListener("click",function(){ mfaLose(); });
+  $("#mfaDeny").addEventListener("click",function(){
+    mfaDenies++;
+    ping(620,.08);
+    if(mfaDenies>=NEED_DENIES){ mfaWin(); return; }
+    // denying clears THIS prompt, but another arrives shortly
+    var scr=$("#mfaScreen");
+    scr.querySelector(".mfa-card").style.opacity=".3";
+    mfaTimer=setTimeout(nextCard, reduce?400:800);
+  });
+}
+function mfaStop(){ if(mfaTimer){clearTimeout(mfaTimer); mfaTimer=null;} }
+function mfaWin(){
+  mfaStop();
+  $("#mfaScreen").innerHTML='<div class="notch"></div><div class="mfa-result">'+
+    '<div style="font-size:2.4rem">🛡️</div>'+
+    '<h4 style="color:#0F6E58">You held the line.</h4>'+
+    '<p style="color:#555">You denied every prompt and the attacker gave up. That’s the only winning move. Now change your password — they already have the old one — and tell IT.</p>'+
+    '<button class="btn" style="background:#1D4ED8;color:#fff" id="mfaReset">Run it again</button></div>';
+  $("#mfaMsg").textContent="That’s the whole trick: denying doesn’t make it stop, so people cave at prompt twenty. The rule beats the fatigue — never approve a login you didn’t start.";
+  $("#mfaReset").addEventListener("click",startMfa);
+  ping(740,.25);
+}
+function mfaLose(){
+  mfaStop();
+  $("#mfaScreen").innerHTML='<div class="notch"></div><div class="mfa-result">'+
+    '<div style="font-size:2.4rem">⚠️</div>'+
+    '<h4 style="color:#9B1C1C">That’s how they get in.</h4>'+
+    '<p style="color:#555">One Approve after '+mfaDenies+' Denies, and they’re in. The spam is designed to wear you down until you tap it just to sleep. Deny every single time.</p>'+
+    '<button class="btn" style="background:#1D4ED8;color:#fff" id="mfaReset">Try again</button></div>';
+  $("#mfaMsg").textContent="It happens to lots of people — that’s the point of the barrage. The fix is a rule, not willpower: never approve a prompt you didn’t trigger.";
+  $("#mfaReset").addEventListener("click",startMfa);
+  ping(180,.25);
+}
+
+// vishing voicemail
+var speaking=false;
+$("#vmPlay").addEventListener("click",function(){
+  var text=$("#vmText").textContent.replace(/[“”]/g,"");
+  var wave=$("#wave");
+  if("speechSynthesis" in window){
+    if(speaking){ speechSynthesis.cancel(); return; }
+    var u=new SpeechSynthesisUtterance(text);
+    u.rate=.98; u.pitch=1;
+    u.onstart=function(){ speaking=true; wave.classList.add("play"); $("#vmPlay").textContent="Stop"; };
+    u.onend=function(){ speaking=false; wave.classList.remove("play"); $("#vmPlay").textContent="Play voicemail"; };
+    speechSynthesis.cancel(); speechSynthesis.speak(u);
+  } else {
+    $("#vmNote").textContent="Your browser can’t play this voice, but the transcript is right here.";
+    wave.classList.add("play"); setTimeout(function(){wave.classList.remove("play");},2500);
+  }
+});
+// build wave bars
+(function(){ var w=$("#wave"); for(var i=0;i<28;i++){ var b=document.createElement("i"); b.style.animationDelay=(i*0.05)+"s"; w.appendChild(b);} })();
+
+/* ---------- 7. SLOW steps + badge ---------- */
+var stepsDone=[false,false,false,false];
+$$(".step input").forEach(function(cb){
+  cb.addEventListener("change",function(){
+    var i=+cb.dataset.step;
+    stepsDone[i]=cb.checked;
+    cb.closest(".step").classList.toggle("checked",cb.checked);
+    $$(".slow-word span")[i].classList.toggle("lit",cb.checked);
+    ping(cb.checked?660:300,.1);
+    updateBadgeState();
+  });
+});
+function allSteps(){ return stepsDone.every(Boolean); }
+function updateBadgeState(){
+  var ready=allSteps();
+  var dl=$("#dlBadge");
+  dl.setAttribute("aria-disabled",String(!ready));
+  if(ready){
+    $("#badgeTitle").textContent="You’re a Human Firewall.";
+    $("#badgeSub").textContent="Badge unlocked. Download it, then send this page to someone who needs it.";
+    drawBadge();
+  }
+}
+
+function drawBadge(){
+  var c=$("#badge"), x=c.getContext("2d"), W=600;
+  var ready=allSteps();
+  // bg
+  var g=x.createLinearGradient(0,0,W,W);
+  g.addColorStop(0,"#0F1A2B"); g.addColorStop(1,"#1E304B");
+  x.fillStyle=g; x.fillRect(0,0,W,W);
+  // frame
+  x.strokeStyle=ready?"#2EC4A0":"#46536B"; x.lineWidth=10;
+  x.strokeRect(24,24,W-48,W-48);
+  // hook mark
+  x.strokeStyle="#FF8A3D"; x.lineWidth=20; x.lineCap="round";
+  x.beginPath(); x.moveTo(330,120); x.lineTo(330,300); x.arc(290,300,40,0,Math.PI); x.stroke();
+  x.beginPath(); x.moveTo(250,300); x.lineTo(230,330); x.moveTo(250,300); x.lineTo(278,326); x.stroke();
+  x.fillStyle="#E9EEF6"; x.beginPath(); x.arc(330,112,14,0,Math.PI*2); x.fill();
+  // text
+  x.textAlign="center"; x.fillStyle="#E9EEF6";
+  x.font="800 58px Bricolage Grotesque, Arial"; 
+  x.fillText("HUMAN",300,420); x.fillText("FIREWALL",300,478);
+  x.fillStyle=ready?"#2EC4A0":"#AEBBD0";
+  x.font="600 26px JetBrains Mono, monospace";
+  var sc=window.__finalScore||0;
+  x.fillText(ready?("Spot the Phish: "+sc+"/8"):"Complete the pledge",300,528);
+  x.fillStyle="#AEBBD0"; x.font="400 20px Atkinson Hyperlegible, Arial";
+  x.fillText("hooked.bosatek.com",300,560);
+  // export
+  try{
+    var url=c.toDataURL("image/png");
+    $("#dlBadge").href=url;
+  }catch(e){}
+}
+drawBadge();
+$("#dlBadge").addEventListener("click",function(e){
+  if(this.getAttribute("aria-disabled")==="true"){ e.preventDefault(); alert("Check all four S.L.O.W. steps to unlock your badge."); }
+});
+
+$("#copyLink").addEventListener("click",function(){
+  var url=location.href.split("#")[0];
+  var btn=this;
+  function done(){ btn.textContent="Link copied"; setTimeout(function(){btn.textContent="Copy page link";},1800); }
+  if(navigator.clipboard){ navigator.clipboard.writeText(url).then(done,done); }
+  else{ done(); }
+});
+
+})();
+</script>
+</body>
+</html>
