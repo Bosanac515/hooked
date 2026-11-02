@@ -431,6 +431,57 @@ footer{background:var(--deep); color:var(--bone-soft); padding:2rem 0; font-size
   *,*::before,*::after{animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important; scroll-behavior:auto!important}
   .log li,.hops li,.spread-node,.spread-edge{opacity:1}
 }
+/* ===== Section reel (slim left number-barrel + name flyout) ===== */
+.reel{position:fixed; left:13px; top:50%; transform:translateY(-50%); z-index:45; width:46px; display:none; flex-direction:column; align-items:center; gap:.45rem; opacity:0; transition:opacity .5s}
+.reel.on{display:flex}
+.reel.show{opacity:1}
+.reel-label{max-width:82px; min-height:1.9rem; text-align:center; font-family:var(--mono); font-size:.66rem; font-weight:600; letter-spacing:.5px; text-transform:uppercase; color:var(--lure); background:rgba(15,26,43,.72); backdrop-filter:blur(8px); border:1px solid rgba(255,138,61,.3); border-radius:8px; padding:.3rem .45rem; line-height:1.2; display:grid; place-items:center}
+.reel-btn{width:32px; height:32px; border-radius:50%; border:1px solid rgba(174,187,208,.3); background:rgba(15,26,43,.72); color:var(--bone-soft); backdrop-filter:blur(8px); display:grid; place-items:center; transition:.2s}
+.reel-btn:hover{border-color:var(--lure); color:var(--lure); transform:scale(1.08)}
+.reel-btn svg{width:15px; height:15px}
+.drum-wrap{position:relative; width:46px; height:118px; perspective:460px; -webkit-perspective:460px}
+.drum{position:absolute; inset:0; transform-style:preserve-3d; transition:transform .72s cubic-bezier(.3,.9,.25,1)}
+.drum-face{position:absolute; left:0; right:0; top:50%; height:34px; margin-top:-17px; display:grid; place-items:center; backface-visibility:hidden; -webkit-backface-visibility:hidden; font-family:var(--mono); font-weight:600; font-size:.95rem; color:var(--bone-soft); background:rgba(15,26,43,.62); border:1px solid rgba(174,187,208,.14); border-radius:9px; backdrop-filter:blur(5px)}
+.drum-face.active{color:var(--lure); border-color:rgba(255,138,61,.55); box-shadow:0 0 14px rgba(255,138,61,.25)}
+.reel-rail{position:absolute; left:-9px; top:8px; bottom:8px; width:3px; border-radius:2px; background:rgba(174,187,208,.2); overflow:hidden}
+.reel-rail .fill{position:absolute; left:0; right:0; top:0; background:var(--lure); border-radius:2px; transition:height .5s}
+.reel.hint .drum-wrap{animation:reelHint 1.1s ease-in-out 2}
+@keyframes reelHint{30%{transform:translateY(7px)}60%{transform:translateY(0)}}
+.reel-scrollcue{font-family:var(--mono); font-size:.62rem; color:var(--lure); opacity:0; white-space:nowrap; transition:opacity .4s; margin-top:-.2rem}
+.reel.hint .reel-scrollcue{opacity:1}
+/* name flyout */
+.reel-flyout{position:absolute; left:52px; top:50%; transform:translateY(-50%) translateX(-8px); background:rgba(15,26,43,.94); border:1px solid rgba(174,187,208,.22); border-radius:12px; padding:.4rem; min-width:158px; opacity:0; pointer-events:none; transition:opacity .25s, transform .25s; box-shadow:0 18px 44px rgba(0,0,0,.45); backdrop-filter:blur(10px)}
+.reel:hover .reel-flyout,.reel.peek .reel-flyout{opacity:1; transform:translateY(-50%); pointer-events:auto}
+.fly-item{display:flex; gap:.6rem; align-items:center; padding:.45rem .6rem; border-radius:8px; color:var(--bone-soft); cursor:pointer}
+.fly-item:hover{background:rgba(255,138,61,.12); color:var(--bone)}
+.fly-item.active{color:var(--lure)}
+.fly-item .fidx{font-family:var(--mono); font-size:.72rem; opacity:.7; width:1.2rem}
+.fly-item .fnm{font-family:var(--display); font-weight:700; font-size:1rem; white-space:nowrap}
+@media(min-width:992px){ body.reel-space .wrap{padding-left:72px} }
+
+/* next-section button injected at end of sections */
+.nextsec{display:inline-flex; align-items:center; gap:.6rem; margin-top:2.5rem; border-radius:999px; padding:.7rem 1.3rem; font-family:var(--display); font-weight:700; font-size:1rem; border:1.5px solid; background:transparent; cursor:pointer; transition:.2s}
+.block.dark .nextsec{border-color:rgba(174,187,208,.4); color:var(--bone)}
+.block.dark .nextsec:hover{border-color:var(--lure); color:var(--lure); gap:.9rem}
+.block.light .nextsec{border-color:#9FB0C9; color:var(--ink)}
+.block.light .nextsec:hover{border-color:var(--lure); color:var(--lure-ink); gap:.9rem}
+.nextsec .chev{display:inline-grid; place-items:center; width:1.4rem; height:1.4rem; border-radius:50%; background:var(--lure); color:#2A1405; animation:bob 1.6s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(3px)}}
+
+/* coach bubble (guides a confused user through the sim) */
+.coach{position:absolute; z-index:12; max-width:230px; background:#111; color:#fff; font-family:var(--body); font-size:.9rem; line-height:1.35; padding:.7rem .85rem; border-radius:10px; box-shadow:0 12px 30px rgba(0,0,0,.45); opacity:0; transform:translateY(6px); transition:opacity .3s, transform .3s; pointer-events:none}
+.coach.show{opacity:1; transform:none}
+.coach b{color:var(--lure)}
+.coach::after{content:""; position:absolute; width:12px; height:12px; background:#111; transform:rotate(45deg)}
+.coach.down::after{left:22px; bottom:-5px}
+.coach.up::after{left:22px; top:-5px}
+.coach.left::after{left:-5px; top:18px}
+.pulse-cta{animation:ctaPulse 1.2s ease-in-out infinite!important; box-shadow:0 0 0 0 rgba(255,138,61,.6)}
+@keyframes ctaPulse{0%{box-shadow:0 0 0 0 rgba(255,138,61,.55)}70%{box-shadow:0 0 0 12px rgba(255,138,61,0)}100%{box-shadow:0 0 0 0 rgba(255,138,61,0)}}
+.fake-field.pulse-field{border-color:var(--lure)!important; animation:ctaPulse 1.2s ease-in-out infinite}
+
+@media (max-width:991px){ .reel{display:none!important} body.reel-space .wrap{padding-left:inherit} }
+@media (prefers-reduced-motion: reduce){ .reel .drum{transition:none} .nextsec .chev,.reel.hint .drum-wrap{animation:none} }
 </style>
 </head>
 <body>
@@ -639,11 +690,11 @@ footer{background:var(--deep); color:var(--bone-soft); padding:2rem 0; font-size
         <p class="globe-cap" id="globeCap">tracing credential relay…</p>
       </div>
       <ol class="hops" id="hopList">
-        <li data-hop="0"><span class="hdot"></span><span><span class="hwhere">Ames, Iowa — you </span><span class="hwhat">You submit your NetID and password on the fake page.</span></span></li>
-        <li data-hop="1"><span class="hdot"></span><span><span class="hwhere">Amsterdam — proxy </span><span class="hwhat">The data is bounced through a rented server to hide its origin.</span></span></li>
-        <li data-hop="2"><span class="hdot"></span><span><span class="hwhere">Lagos — relay </span><span class="hwhat">Passed again through a compromised host in another country.</span></span></li>
-        <li data-hop="3"><span class="hdot"></span><span><span class="hwhere">Moscow — collector </span><span class="hwhat">Your login lands in a database with thousands of others.</span></span></li>
-        <li data-hop="4"><span class="hdot"></span><span><span class="hwhere">The attacker — anywhere </span><span class="hwhat">They buy or use it. You never find out where it went.</span></span></li>
+        <li data-hop="0"><span class="hdot"></span><span><span class="hwhere">Ames, Iowa — you</span><span class="hwhat">You submit your NetID and password on the fake page.</span></span></li>
+        <li data-hop="1"><span class="hdot"></span><span><span class="hwhere">Amsterdam — proxy</span><span class="hwhat">The data is bounced through a rented server to hide its origin.</span></span></li>
+        <li data-hop="2"><span class="hdot"></span><span><span class="hwhere">Lagos — relay</span><span class="hwhat">Passed again through a compromised host in another country.</span></span></li>
+        <li data-hop="3"><span class="hdot"></span><span><span class="hwhere">Moscow — collector</span><span class="hwhat">Your login lands in a database with thousands of others.</span></span></li>
+        <li data-hop="4"><span class="hdot"></span><span><span class="hwhere">The attacker — anywhere</span><span class="hwhat">They buy or use it. You never find out where it went.</span></span></li>
       </ol>
     </div>
 
@@ -661,81 +712,6 @@ footer{background:var(--deep); color:var(--bone-soft); padding:2rem 0; font-size
       </ol>
     </div>
     <p class="soft" style="font-size:.95rem; margin-top:1rem">A composite scenario built from account-takeover patterns described by Iowa State ITS and the FBI. <a class="cite" href="#src-isu23">ISU ITS</a> <a class="cite" href="#src-fbi-jobs">FBI IC3</a></p>
-  </div>
-</section>
-
-<!-- ================= 3b. SPREAD ================= -->
-<section id="spread" class="block dark" aria-labelledby="spreadTitle">
-  <div class="wrap">
-    <p class="kicker">One click doesn’t stay one click</p>
-    <h2 id="spreadTitle">How a single account takes a campus down with it.</h2>
-    <p class="prose soft">This is the part people miss. The danger isn’t only your account — it’s that your account becomes the next attacker. At a school the size of Iowa State, a few accounts get taken over on a routine basis. Each one is used to email long lists of students a link to download “remote support” or “security” software. A fraction of those students install it or hand over their login, and <b>their</b> accounts send it onward. The chain never fully stops.</p>
-
-    <div class="spread-stage">
-      <svg id="spreadSvg" viewBox="0 0 900 360" role="img" aria-label="A branching diagram: one compromised account emails many students; a few of those become compromised and each emails many more, spreading outward in waves.">
-        <g id="spreadEdges"></g>
-        <g id="spreadNodes"></g>
-      </svg>
-    </div>
-
-    <div class="spread-counter">
-      <div><div class="big" id="spreadCount">1</div><div class="lbl">compromised account becomes…</div></div>
-      <div><div class="big" id="spreadCount2">0</div><div class="lbl">students sent a malicious link in the first wave alone</div></div>
-    </div>
-    <div class="ongoing"><span class="blip" aria-hidden="true"></span>This pattern is still active on campuses today</div>
-    <p class="soft" style="font-size:.95rem; margin-top:1.5rem">Illustration of a self-spreading account-takeover chain. Iowa State ITS has described being overwhelmed by phishing reports and has documented attackers using already-compromised <code>iastate.edu</code> accounts to reach the rest of campus. <a class="cite" href="#src-isu23">ISU ITS</a> <a class="cite" href="#src-isu24">ISU ITS</a></p>
-  </div>
-</section>
-
-<!-- ================= 4. INSIDER ================= -->
-<section id="insider" class="block dark" aria-labelledby="inTitle">
-  <div class="wrap">
-    <div class="insider-grid">
-      <div>
-        <p class="kicker">Why smart people click</p>
-        <h2 id="inTitle">I’ve written emails like this on purpose.</h2>
-        <p class="quote">Phishing doesn’t beat your intelligence. It beats your attention.</p>
-        <div class="prose">
-          <p>I’m Aden, a Cybersecurity Engineering student at Iowa State. This past summer I worked as an offensive security intern running authorized social engineering assessments — companies hire a team to phish and call their own employees, with permission, so the weak spots turn up before criminals find them. I’m heading back next summer to run more phishing and vishing engagements.</p>
-          <p class="soft">The lesson from the other side: people don’t click because they’re careless. They click because a good phish pulls on one of four levers that make your brain skip the checking step. Pick one.</p>
-        </div>
-      </div>
-      <div>
-        <div class="levers" role="tablist" aria-label="Psychological levers">
-          <button class="lever" role="tab" aria-selected="true" aria-controls="leverPanel" data-lever="0">Urgency</button>
-          <button class="lever" role="tab" aria-selected="false" aria-controls="leverPanel" data-lever="1">Authority</button>
-          <button class="lever" role="tab" aria-selected="false" aria-controls="leverPanel" data-lever="2">Fear</button>
-          <button class="lever" role="tab" aria-selected="false" aria-controls="leverPanel" data-lever="3">Reward</button>
-        </div>
-        <div class="lever-panel" id="leverPanel" role="tabpanel" aria-live="polite"></div>
-      </div>
-    </div>
-
-    <div class="compare">
-      <h3>Drag to compare. One of these is real.</h3>
-      <p class="soft prose">Same school, same subject line. The differences are small on purpose.</p>
-      <div class="cmp-stage" id="cmpStage" style="--pos:50%">
-        <div class="cmp-layer real" aria-label="Real email">
-          <span class="cmp-tag">Real</span>
-          <div class="cmp-row"><span>From</span><span class="addr">finaid@cardinalplains.edu</span></div>
-          <div class="cmp-row"><span>Greeting</span><span>Hi Jordan,</span></div>
-          <div class="cmp-row"><span>Ask</span><span>Log in to MyCPU the way you normally do to review your aid.</span></div>
-          <div class="cmp-row"><span>Link</span><span>None</span></div>
-          <div class="cmp-row"><span>Deadline</span><span>Before classes begin Aug. 24</span></div>
-        </div>
-        <div class="cmp-layer fake" aria-label="Fake email">
-          <span class="cmp-tag">Fake</span>
-          <div class="cmp-row"><span>From</span><span class="addr">finaid@cardinalplains-edu.com</span></div>
-          <div class="cmp-row"><span>Greeting</span><span>Hi Student,</span></div>
-          <div class="cmp-row"><span>Ask</span><span>Verify your NetID or your refund will be cancelled.</span></div>
-          <div class="cmp-row"><span>Link</span><span>“Verify my account” button</span></div>
-          <div class="cmp-row"><span>Deadline</span><span>Within 24 hours</span></div>
-        </div>
-        <div class="cmp-handle" aria-hidden="true"></div>
-      </div>
-      <label class="sr-only" for="cmpRange">Comparison slider: drag to reveal more of the fake or the real email</label>
-      <input class="cmp-range" id="cmpRange" type="range" min="0" max="100" value="50">
-    </div>
   </div>
 </section>
 
@@ -1031,16 +1007,71 @@ function wireVerify(){
   ["mouseleave","blur"].forEach(function(ev){
     verifyBtn.addEventListener(ev,function(){ status1.innerHTML="&nbsp;"; });
   });
-  verifyBtn.addEventListener("click",function(){
-    loginOverlay.classList.add("show");
-    loginOverlay.setAttribute("aria-hidden","false");
-    setTimeout(function(){ var f=$(".fake-field",loginOverlay); if(f) f.focus(); }, reduce?0:450);
+  verifyBtn.addEventListener("click",openLogin);
+  armVerifyCoach();
+}
+
+/* ---- coaching: guide a confused / hesitant user through the sim ---- */
+var loginOpen=false, vCoachA, vCoachB, fCoachA, fCoachB;
+function hideCoach(){
+  var c=$("#coach"); if(c) c.classList.remove("show");
+  var v=$("#verifyBtn"); if(v) v.classList.remove("pulse-cta");
+  $$(".fake-field").forEach(function(f){ f.classList.remove("pulse-field"); });
+}
+function clearCoach(){ [vCoachA,vCoachB,fCoachA,fCoachB].forEach(function(t){clearTimeout(t);}); hideCoach(); }
+function coachAt(target, html, placement){
+  if(!target) return;
+  var c=$("#coach");
+  if(!c){ c=document.createElement("div"); c.id="coach"; client.appendChild(c); }
+  c.className="coach "+(placement||"down"); c.innerHTML=html;
+  var cb=client.getBoundingClientRect(), tb=target.getBoundingClientRect();
+  var tx=tb.left-cb.left, ty=tb.top-cb.top;
+  requestAnimationFrame(function(){
+    var w=c.offsetWidth, h=c.offsetHeight, x, y, pl=placement||"down";
+    if(pl==="up"){ x=tx; y=ty+tb.height+10; }
+    else if(pl==="left"){ x=tx+tb.width+12; y=ty; }
+    else { x=tx; y=ty-h-10; }
+    x=Math.max(8,Math.min(x, cb.width-w-8));
+    y=Math.max(8,Math.min(y, cb.height-h-8));
+    c.style.left=x+"px"; c.style.top=y+"px"; c.classList.add("show");
   });
+}
+function armVerifyCoach(){
+  clearTimeout(vCoachA); clearTimeout(vCoachB);
+  if(sprung||loginOpen) return;
+  vCoachA=setTimeout(function(){
+    if(sprung||loginOpen) return;
+    var v=$("#verifyBtn"); if(!v) return;
+    v.classList.add("pulse-cta");
+    coachAt(v,"This email is the bait. <b>Click “Verify my account”</b> to see what happens — it’s a safe simulation, nothing is sent.","up");
+    ping(640,.1);
+    vCoachB=setTimeout(function(){ if(!sprung&&!loginOpen) openLogin(); }, reduce?700:5500);
+  }, reduce?600:4500);
+}
+function openLogin(){
+  if(loginOpen) return; loginOpen=true;
+  clearTimeout(vCoachA); clearTimeout(vCoachB); hideCoach();
+  loginOverlay.classList.add("show"); loginOverlay.setAttribute("aria-hidden","false");
+  setTimeout(function(){ var f=$(".fake-field",loginOverlay); if(f) f.focus(); }, reduce?0:450);
+  armFieldCoach();
+}
+function armFieldCoach(){
+  clearTimeout(fCoachA); clearTimeout(fCoachB);
+  if(sprung) return;
+  fCoachA=setTimeout(function(){
+    if(sprung) return;
+    var f=$(".fake-field",loginOverlay); if(!f) return;
+    $$(".fake-field",loginOverlay).forEach(function(x){ x.classList.add("pulse-field"); });
+    coachAt(f,"<b>Click a field to “type” your login.</b> It’s a simulation — nothing you enter is real, stored, or sent.","left");
+    ping(640,.1);
+    fCoachB=setTimeout(function(){ if(!sprung){ var ff=$(".fake-field",loginOverlay); if(ff) trapHit(ff); } }, reduce?700:5500);
+  }, reduce?600:3500);
 }
 
 /* Report on the phish = the correct move = a WIN ending */
 $("#reportBtn").addEventListener("click",function(){
   if(sprung) return; sprung=true;
+  clearCoach();
   ping(760,.18);
   gotoReveal("caught");
 });
@@ -1073,6 +1104,7 @@ function spring(){
 var trapBusy=false;
 function trapHit(el){
   if(sprung||trapBusy) return;
+  clearCoach();
   if(el.classList.contains("fake-field")){ trapBusy=true; captureField(el, spring); }
   else spring();
 }
@@ -1097,7 +1129,7 @@ function gotoReveal(mode){
 
 function doSkip(e){
   if(e) e.preventDefault();
-  sprung=true; markOpened(); unlock();
+  sprung=true; markOpened(); clearCoach(); unlock();
   $("#reveal").classList.add("on");
   $("#stakes").scrollIntoView({behavior:"smooth"});
 }
@@ -1305,101 +1337,6 @@ $$("#log li").forEach(function(li,i){
   drawGlobe(); drawNode(nodes[0],false);
   onIn(canvas,start,{threshold:.4});
 })();
-
-/* ---------- 3b. SPREAD DIAGRAM ---------- */
-(function(){
-  var svg=$("#spreadSvg"); if(!svg) return;
-  var NS="http://www.w3.org/2000/svg";
-  var edgesG=$("#spreadEdges"), nodesG=$("#spreadNodes");
-  // waves: x positions, counts
-  var waves=[{n:1,x:70,r:11,c:"#F2555A"},{n:5,x:300,r:7,c:"#FF8A3D"},{n:11,x:560,r:5,c:"#FFB37A"},{n:18,x:830,r:3.5,c:"#AEBBD0"}];
-  var H=360, positions=[];
-  waves.forEach(function(w,wi){
-    var arr=[];
-    for(var i=0;i<w.n;i++){
-      var y = w.n===1? H/2 : (H*0.12 + (H*0.76)*(i/(w.n-1)));
-      var node=document.createElementNS(NS,"circle");
-      node.setAttribute("cx",w.x); node.setAttribute("cy",y.toFixed(1));
-      node.setAttribute("r",w.r); node.setAttribute("fill",w.c);
-      node.setAttribute("class","spread-node"); node.dataset.wave=wi;
-      nodesG.appendChild(node); arr.push({x:w.x,y:y,el:node});
-    }
-    positions.push(arr);
-  });
-  // edges: connect a few from each wave to next
-  var edges=[];
-  for(var wi=0;wi<positions.length-1;wi++){
-    var from=positions[wi], to=positions[wi+1];
-    to.forEach(function(t,ti){
-      var f=from[ti % from.length];
-      var e=document.createElementNS(NS,"path");
-      var mx=(f.x+t.x)/2;
-      e.setAttribute("d","M"+f.x+","+f.y+" C"+mx+","+f.y+" "+mx+","+t.y+" "+t.x+","+t.y);
-      e.setAttribute("fill","none"); e.setAttribute("class","spread-edge"); e.dataset.wave=wi+1;
-      edgesG.appendChild(e); edges.push(e);
-    });
-  }
-  var countEl=$("#spreadCount"), count2El=$("#spreadCount2");
-  function revealWave(wi){
-    $$('[data-wave="'+wi+'"]',svg).forEach(function(el,i){
-      setTimeout(function(){ el.classList.add("on"); }, reduce?0:i*45);
-    });
-    if(wi===1 && count2El){ animateNum(count2El,0,waves[1].n*40,900); } // "first wave" list size, illustrative
-  }
-  function animateNum(el,from,to,dur){
-    if(reduce){ el.textContent=to.toLocaleString(); return; }
-    var t0=performance.now();
-    (function step(now){
-      var p=Math.min(1,(now-t0)/dur);
-      el.textContent=Math.round(from+(to-from)*(p*(2-p))).toLocaleString();
-      if(p<1) requestAnimationFrame(step);
-    })(t0);
-  }
-  var started=false;
-  onIn(svg,function(){
-    if(started) return; started=true;
-    waves.forEach(function(w,wi){ setTimeout(function(){ revealWave(wi); ping(480-wi*40,.08); }, reduce?0:wi*700); });
-  },{threshold:.3});
-})();
-
-/* ---------- 4. LEVERS ---------- */
-var levers=[
-  {t:"Urgency",ex:"“Action required within 24 hours or your account will be closed.”",b:"A deadline removes the time you’d spend checking. Real institutions give you reasonable notice and a way to confirm."},
-  {t:"Authority",ex:"“This is the IT Help Desk / your dean / the IRS.”",b:"We’re trained to comply with authority. Attackers borrow a badge they don’t have. Verify through a channel you choose, not the one they gave you."},
-  {t:"Fear",ex:"“Suspicious login detected. Your data may be compromised.”",b:"Fear narrows your focus to the threat they named, so you miss the one that’s actually in front of you: the message itself."},
-  {t:"Reward",ex:"“You’ve been selected for a $450/week remote role. Start today.”",b:"Too-good offers switch off scrutiny with excitement. If you didn’t apply, you weren’t selected. This is the lever aimed straight at students."}
-];
-var leverPanel=$("#leverPanel");
-function showLever(i){
-  var l=levers[i];
-  leverPanel.innerHTML='<div class="ex">'+l.ex+'</div><p style="margin:0">'+l.b+'</p>';
-  $$(".lever").forEach(function(b,bi){ b.setAttribute("aria-selected",String(bi===i)); });
-}
-$$(".lever").forEach(function(b,i){
-  b.addEventListener("click",function(){showLever(i);});
-  b.addEventListener("keydown",function(e){
-    if(e.key==="ArrowRight"||e.key==="ArrowLeft"){
-      e.preventDefault();
-      var n=(i+(e.key==="ArrowRight"?1:-1)+levers.length)%levers.length;
-      $$(".lever")[n].focus(); showLever(n);
-    }
-  });
-});
-showLever(0);
-
-/* ---------- 4b. COMPARE slider ---------- */
-var stage=$("#cmpStage"), range=$("#cmpRange");
-function setPos(v){ v=Math.max(0,Math.min(100,v)); stage.style.setProperty("--pos",v+"%"); range.value=v; }
-range.addEventListener("input",function(){ setPos(+range.value); });
-function dragFromEvent(e){
-  var r=stage.getBoundingClientRect();
-  var x=(e.touches?e.touches[0].clientX:e.clientX)-r.left;
-  setPos(x/r.width*100);
-}
-var dragging=false;
-stage.addEventListener("pointerdown",function(e){dragging=true;dragFromEvent(e);});
-window.addEventListener("pointermove",function(e){if(dragging)dragFromEvent(e);});
-window.addEventListener("pointerup",function(){dragging=false;});
 
 /* ---------- 5. GAME ---------- */
 var MESSAGES=[
@@ -1664,6 +1601,130 @@ $("#copyLink").addEventListener("click",function(){
   if(navigator.clipboard){ navigator.clipboard.writeText(url).then(done,done); }
   else{ done(); }
 });
+
+/* ======================================================
+   SECTION NAVIGATION: rotating reel + next buttons
+====================================================== */
+var SECTIONS=[
+  {id:"hook",   name:"Start"},
+  {id:"stakes", name:"The Threat"},
+  {id:"timeline",name:"The Attack"},
+  {id:"game",   name:"Your Turn"},
+  {id:"beyond", name:"Beyond Email"},
+  {id:"slow",   name:"The Fix"}
+];
+var secEls=SECTIONS.map(function(s){return document.getElementById(s.id);}).filter(Boolean);
+var curSec=0;
+
+function scrollToSec(i){
+  i=Math.max(0,Math.min(SECTIONS.length-1,i));
+  var el=document.getElementById(SECTIONS[i].id); if(!el) return;
+  spinReel(i);                 // update the wheel immediately on any navigation
+  el.scrollIntoView({behavior:reduce?"auto":"smooth", block:"start"});
+}
+
+/* ---- build the reel ---- */
+var reel, reelLabel, drum, drumFaces=[], flyItems=[], railFill, peekT,
+    N=SECTIONS.length, STEP=360/N, RADIUS=40;
+(function buildReel(){
+  reel=document.createElement("div"); reel.className="reel"; reel.setAttribute("aria-label","Section navigator");
+  reelLabel=document.createElement("div"); reelLabel.className="reel-label"; reelLabel.setAttribute("aria-live","polite");
+  var up=document.createElement("button"); up.className="reel-btn"; up.setAttribute("aria-label","Previous section");
+  up.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 15l6-6 6 6"/></svg>';
+  up.addEventListener("click",function(){ scrollToSec(curSec-1); });
+  var wrap=document.createElement("div"); wrap.className="drum-wrap";
+  var rail=document.createElement("div"); rail.className="reel-rail"; railFill=document.createElement("div"); railFill.className="fill"; rail.appendChild(railFill); wrap.appendChild(rail);
+  drum=document.createElement("div"); drum.className="drum";
+  SECTIONS.forEach(function(s,i){
+    var f=document.createElement("div"); f.className="drum-face";
+    f.style.transform="rotateX("+(i*STEP)+"deg) translateZ("+RADIUS+"px)";
+    f.textContent="0"+(i+1);
+    drum.appendChild(f); drumFaces.push(f);
+  });
+  wrap.appendChild(drum);
+  // name flyout
+  var fly=document.createElement("div"); fly.className="reel-flyout";
+  SECTIONS.forEach(function(s,i){
+    var it=document.createElement("div"); it.className="fly-item"; it.setAttribute("role","button"); it.tabIndex=0;
+    it.innerHTML='<span class="fidx">0'+(i+1)+'</span><span class="fnm">'+s.name+'</span>';
+    it.addEventListener("click",function(){ scrollToSec(i); });
+    it.addEventListener("keydown",function(e){ if(e.key==="Enter"||e.key===" "){e.preventDefault();scrollToSec(i);} });
+    fly.appendChild(it); flyItems.push(it);
+  });
+  wrap.appendChild(fly);
+  var cue=document.createElement("div"); cue.className="reel-scrollcue"; cue.textContent="scroll ↓";
+  var down=document.createElement("button"); down.className="reel-btn"; down.setAttribute("aria-label","Next section");
+  down.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>';
+  down.addEventListener("click",function(){ scrollToSec(curSec+1); });
+  reel.appendChild(reelLabel); reel.appendChild(up); reel.appendChild(wrap); reel.appendChild(cue); reel.appendChild(down);
+  document.body.appendChild(reel);
+})();
+
+function spinReel(i){
+  var changed = i!==curSec;
+  curSec=i;
+  drum.style.transform="rotateX("+(-i*STEP)+"deg)";
+  drumFaces.forEach(function(f,fi){ f.classList.toggle("active",fi===i); });
+  flyItems.forEach(function(f,fi){ f.classList.toggle("active",fi===i); });
+  railFill.style.height=((i/(N-1))*100)+"%";
+  if(reelLabel) reelLabel.textContent=SECTIONS[i].name;
+  if(changed){ reel.classList.add("peek"); clearTimeout(peekT); peekT=setTimeout(function(){reel.classList.remove("peek");},1700); }
+}
+function showReel(on){ reel.classList.add("on"); document.body.classList.add("reel-space"); requestAnimationFrame(function(){ reel.classList.toggle("show",on); }); }
+
+/* reveal the reel only after the sim is finished/skipped (scroll unlocked) */
+var reelWatch=setInterval(function(){
+  if(!document.body.classList.contains("sim-lock")){
+    clearInterval(reelWatch); showReel(true); syncSectionFromScroll(); armScrollNudge();
+  }
+},300);
+
+/* track current section while scrolling.
+   A center-line scan beats IntersectionObserver thresholds here, because several
+   sections are taller than the viewport and would never reach a 50% ratio. */
+var scrollTick=false;
+function syncSectionFromScroll(){
+  scrollTick=false;
+  var mid=window.innerHeight*0.5, best=-1, bestDist=Infinity;
+  for(var i=0;i<secEls.length;i++){
+    var r=secEls[i].getBoundingClientRect();
+    if(r.bottom<0 || r.top>window.innerHeight) continue;     // off-screen
+    // distance from the section's visible span to the viewport mid-line
+    var d = (r.top<=mid && r.bottom>=mid) ? 0 : Math.min(Math.abs(r.top-mid),Math.abs(r.bottom-mid));
+    if(d<bestDist){ bestDist=d; best=i; }
+  }
+  if(best>=0 && best!==curSec){ spinReel(best); bumpNudge(); }
+}
+window.addEventListener("scroll",function(){
+  if(!scrollTick){ scrollTick=true; requestAnimationFrame(syncSectionFromScroll); }
+},{passive:true});
+
+/* ---- next-section buttons at the end of each content section ---- */
+SECTIONS.forEach(function(s,i){
+  if(i>=SECTIONS.length-1) return;        // no button after the last
+  if(s.id==="hook") return;               // hook ends in the sim, not a button
+  var el=document.getElementById(s.id); if(!el) return;
+  var wrap=el.querySelector(".wrap")||el;
+  var next=SECTIONS[i+1];
+  var b=document.createElement("button"); b.className="nextsec";
+  b.innerHTML='Next: '+next.name+' <span class="chev" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></span>';
+  b.setAttribute("aria-label","Go to next section: "+next.name);
+  b.addEventListener("click",function(){ scrollToSec(i+1); });
+  wrap.appendChild(b);
+});
+
+/* ---- periodic "scroll" nudge on the reel if the user sits still ---- */
+var nudgeTimer=null;
+function armScrollNudge(){
+  if(reduce) return;
+  clearTimeout(nudgeTimer);
+  if(curSec>=SECTIONS.length-1) return;   // nothing below
+  nudgeTimer=setTimeout(function(){
+    if(curSec<SECTIONS.length-1){ reel.classList.add("hint"); setTimeout(function(){reel.classList.remove("hint");},2600); armScrollNudge(); }
+  }, 9000);
+}
+function bumpNudge(){ armScrollNudge(); }
+["wheel","touchstart","keydown","click"].forEach(function(ev){ window.addEventListener(ev,bumpNudge,{passive:true}); });
 
 })();
 </script>
